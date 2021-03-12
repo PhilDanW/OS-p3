@@ -20,6 +20,8 @@ const key_t mutexKey;
 const key_t emptyKey;
 const key_t fullKey;
 const int QUEUE_SIZE = 25; //size of the queue
+const int MAX_PROCESS = 19;
+const int BUFFER = 8192;
 const char* producerProg = "./produce";
 const char* consumerProg = "./consume";
 const char* writeLog = "./Monitor.log";
