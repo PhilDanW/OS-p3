@@ -6,4 +6,7 @@
 #include "process.h"
 #include "stuff.h"
 #include "productSemaphores.h"
+using namespace std;
 
+static int processes;
+//dynamic 
