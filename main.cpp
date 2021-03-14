@@ -82,5 +82,15 @@ int main(int argc, char* argv[])
 
     // Start the monitor process, returning whatever monitor returns.
     return monitor(logFile, producers, consumers, timeSeconds);
+}
 
+static void prog_use(std::string name)
+{
+   std::cerr << std::endl << "\t" << name << " [-h] [-o logfile] [-p m] [-c n] [-t time]" << std::endl
+   << "Input options:" << std::endl
+   << "-o 'logfile' Name of file to keep program logs" << std::endl
+   << "-p 'x' number of producers to make" << std::endl
+   << "-c 'y' number of consumers to make" << std::endl
+   << "-t 'time' seconds after which the process will terminate"<< std::endl 
+   << std::endl;
 }
