@@ -51,10 +51,31 @@ int main(int argc, char* argv[])
 
     consumers = min(consumers, children-producers);
     timeSeconds = min(timeSeconds, seconds);
+    
+    if(strLogFile.size() < 1) {
+        errno = EINVAL;
+        perror("master: Error: logfile does not exist ");
+        return EXIT_FAILURE;
+    }
+    else if(nNumberOfProducers < 1) {
+        errno = EINVAL;
+        perror("master: Error: not enough producers given");
+        return EXIT_FAILURE;
+    }
+    else if (nMaxNumberOfConsumers < 1) {
+        errno = EINVAL;
+        perror("master: Error: not enough consumers given");
+        return EXIT_FAILURE;
+    }
+    else if(nSecondsToTerminate < 1) {
+        errno = EINVAL;
+        perror("master: Error: insufficient amount of time");
+        return EXIT_FAILURE;
+    }
   
     cout << producers << " is the number of Producers" << endl
     cout << consumers << " is the number of Consumers" << endl
-    cout << timeSeconds  << "is the number of Seconds" << endl;
+    cout << timeSeconds << "is the number of Seconds" << endl;
 
     // Start the monitor process, returning whatever monitor returns.
     return process(logFile, producers, consumers, timeSeconds);
