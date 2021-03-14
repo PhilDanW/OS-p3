@@ -133,18 +133,18 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
         {
             if(consumerArray[i] == waitPID) 
             {
-                consumerArray[i] = NULL;
+                consumerArray[i] = 0;
                 break;
             }
         }
      } 
      else if (waitPID && WIFSIGNALED(waitStatus) > 0) 
      {
-        cout << "Killed by signal. PID: " << wait << WTERMSIG(waitStatus) << endl;
+        cout << "Killed by signal. PID: " << waitPID << WTERMSIG(waitStatus) << endl;
      } 
      else if (waitPID && WIFSIGNALED(waitStatus) > 0) 
      {
-        cout << "Stopped by signal. PID: " << wait << WTERMSIG(waitStatus) << endl;
+        cout << "Stopped by signal. PID: " << waitPID << WTERMSIG(waitStatus) << endl;
      } 
      else if (waitPID && WIFSIGNALED(waitStatus) > 0) 
      {
@@ -203,7 +203,7 @@ int fork(string process, string myLog, int arrayItem)
             }
             else {
               // Convert int to a c_str to send to exec
-              std::string arrayItem = std::to_string(ArrayItem);
+              std::string arrayItem = std::to_string(arrayItem);
               execl(process.c_str(), process.c_str(), arrayItem.c_str(), myLog.c_str(), (char*)0);
             }
 
@@ -218,7 +218,7 @@ int fork(string process, string myLog, int arrayItem)
 //setup shared memory and allocate a segment with length of the queue * (size of product + size of product queue)
 void allocateMemory() {
     int memory = QUEUE_SIZE * (sizeof(itemPointer) + sizeof(itemInfo));
-    shm_id = shmget(KEY_SHMEM, memory, IPC_CREAT | IPC_EXCL | 0660);
+    shm_id = shmget(SHARED, memory, IPC_CREAT | IPC_EXCL | 0660);
     if (shm_id == -1) {
         perror("monitor: Error: could not allocate a segment of shared memory");
         exit(EXIT_FAILURE);
