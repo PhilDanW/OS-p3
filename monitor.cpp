@@ -1,7 +1,7 @@
 #include <iostream>
-#include <string>
-#include <vector>
+#include <string.h>
 #include <unistd.h>
+#include "semaphores.h"
 #include "monitor.h"
 #include "sharedstuff.h"
 using namespace std;
@@ -22,6 +22,8 @@ void signal_handler(int signal)
     gSignalStatus = 1;
 }
 
+//this is the main process to start the monitor
+//during this process producers and consumers will be created as they are needed
 int monitor(string myLog, int producers, int consumers, int seconds) {
   //register the signal handler
   signal(SIGINT, signal_handler);
