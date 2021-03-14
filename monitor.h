@@ -1,5 +1,5 @@
-#ifndef MONITOR_H
-#define MONITOR_H
+#ifndef MONITOR
+#define MONITOR
 
 #include <iostream>
 using namespace std;
