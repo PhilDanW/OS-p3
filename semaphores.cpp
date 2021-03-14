@@ -4,19 +4,14 @@
 #include "semaphores.h"
 using namespace std;
 
-semaphores::semaphores(key_t key, bool Create, int Value)
-{
-    // If the key is valid
-    if(key > 0)
-    {
+semaphores::semaphores(key_t key, bool Create, int Value) {
+    if(key > 0) {
         // this means we are creating a new key
-        if(Create)
-        {
+        if(Create) {
             //give semget all its Permissions
             _semid = semget(key, 1, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH | IPC_EXCL | IPC_CREAT);
             // If successful, set it's value to Value
-            if (_semid > 0)
-            {
+            if (_semid > 0) {
                 semctl(_semid, 0, SETVAL, Value);
                 // make it the creator of the semaphore
                 creator = true;
@@ -24,13 +19,11 @@ semaphores::semaphores(key_t key, bool Create, int Value)
                 _isInitialized = true;
             }
         }
-        else
-        {
+        else {
             // find an already created Semaphore
             _semid = semget(key, 1, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
             creator = false;
-            if (_semid > 0)
-            {
+            if (_semid > 0) {
                 // show that initialization is successfully done
                 _isInitialized = true;
             }
@@ -39,17 +32,14 @@ semaphores::semaphores(key_t key, bool Create, int Value)
 }
 
 //semaphore class destructor
-semaphores::~semaphores()
-{
-    if(creator && _isInitialized)
-    {
+semaphores::~semaphores() {
+    if(creator && _isInitialized) {
         semctl(_semid, 0, IPC_RMID);
     }
 }
 
 //semaphore wait function
-void semaphores::Wait()
-{
+void semaphores::Wait() {
     structSemaBuf.sem_num = 0;
     structSemaBuf.sem_op = -1;
     structSemaBuf.sem_flg = 0;
@@ -58,8 +48,7 @@ void semaphores::Wait()
 }
 
 // Semaphore Signal function
-void semaphores::Signal() 
-{
+void semaphores::Signal() {
     structSemaBuf.sem_num = 0;
     structSemaBuf.sem_op = 1;
     structSemaBuf.sem_flg = 0;
