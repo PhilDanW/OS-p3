@@ -1,7 +1,7 @@
 #include <sys/sem.h>
 #include <sys/stat.h>
 #include <iostream>
-#include "sharedstuff.h"
+#include "semaphores.h"
 using namespace std;
 
 productSemaphores::productSemaphores(key_t key, bool Create, int Value)
