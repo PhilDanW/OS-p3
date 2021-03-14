@@ -1,6 +1,6 @@
 #include <iostream>
 #include <unistd.h>
-#include "stuff.h"
+#include "sharedstuff.h"
 #include <fstream>
 using namespace std;
 
