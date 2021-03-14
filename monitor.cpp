@@ -6,12 +6,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
-#include "libmonitor.h"
+#include "process.h"
 using namespace std;
 
 // Constants
-const int numChildren = 20;
-const int numSeconds = 100;
+const int children = 20;
+const int seconds = 100;
 
 // Main - expecting arguments
 int main(int argc, char* argv[])
@@ -49,14 +49,14 @@ int main(int argc, char* argv[])
         }
     }
 
-    consumers = min(consumers, numChildren-producers);
-    timeSeconds = min(timeSeconds, numSeconds);
+    consumers = min(consumers, children-producers);
+    timeSeconds = min(timeSeconds, seconds);
   
-    cout << producers << " Producers" << endl
-         << consumers << " Consumers" << endl
-         << timeSeconds  << " Max Seconds" << endl;
+    cout << producers << " is the number of Producers" << endl
+    cout << consumers << " is the number of Consumers" << endl
+    cout << timeSeconds  << "is the number of Seconds" << endl;
 
     // Start the monitor process, returning whatever monitor returns.
-    return monitorProcess(lFile, nNumberOfProducers, nNumberOfConsumers, nNumberOfSeconds);
+    return process(logFile, producers, consumers, timeSeconds);
 
 }
