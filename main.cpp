@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string.h>
-#include <vector>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,14 +8,14 @@
 #include "process.h"
 using namespace std;
 
-// Constants
+// Constant values for the max number of children and seconds allowed
 const int children = 20;
 const int seconds = 100;
 
-// Main - expecting arguments
+//gather command line arguments here
 int main(int argc, char* argv[])
 {
-    string logFile = "logfile";
+    string logFile = "This is the LogFile";
     int option;
     int producers = 2
     int consumers = 6;
@@ -49,35 +48,38 @@ int main(int argc, char* argv[])
         }
     }
 
+    //set the actual values for the number of consumers and producers for the program
     consumers = min(consumers, children-producers);
     timeSeconds = min(timeSeconds, seconds);
     
-    if(strLogFile.size() < 1) {
+    //check if all values are valid
+    if(logFile.size() < 1) {
         errno = EINVAL;
-        perror("master: Error: logfile does not exist ");
+        perror("master: Error: the logfile does not exist ");
         return EXIT_FAILURE;
     }
-    else if(nNumberOfProducers < 1) {
+    else if(producers < 1) {
         errno = EINVAL;
         perror("master: Error: not enough producers given");
         return EXIT_FAILURE;
     }
-    else if (nMaxNumberOfConsumers < 1) {
+    else if (consumers < 1) {
         errno = EINVAL;
         perror("master: Error: not enough consumers given");
         return EXIT_FAILURE;
     }
-    else if(nSecondsToTerminate < 1) {
+    else if(timeSeconds < 1) {
         errno = EINVAL;
         perror("master: Error: insufficient amount of time");
         return EXIT_FAILURE;
     }
   
+    // output the parameters that are going to be sent to the monitor process
     cout << producers << " is the number of Producers" << endl
     cout << consumers << " is the number of Consumers" << endl
     cout << timeSeconds << "is the number of Seconds" << endl;
 
     // Start the monitor process, returning whatever monitor returns.
-    return process(logFile, producers, consumers, timeSeconds);
+    return monitor(logFile, producers, consumers, timeSeconds);
 
 }
