@@ -4,7 +4,7 @@
 #include "semaphores.h"
 using namespace std;
 
-productSemaphores::productSemaphores(key_t key, bool Create, int Value)
+semaphores::semaphores(key_t key, bool Create, int Value)
 {
     // If the key is valid
     if(key > 0)
@@ -39,7 +39,7 @@ productSemaphores::productSemaphores(key_t key, bool Create, int Value)
 }
 
 //semaphore class destructor
-productSemaphores::~productSemaphores()
+semaphores::~semaphores()
 {
     if(creator && _isInitialized)
     {
@@ -48,7 +48,7 @@ productSemaphores::~productSemaphores()
 }
 
 //semaphore wait function
-void productSemaphores::Wait()
+void semaphores::Wait()
 {
     structSemaBuf.sem_num = 0;
     structSemaBuf.sem_op = -1;
@@ -58,7 +58,7 @@ void productSemaphores::Wait()
 }
 
 // Semaphore Signal function
-void productSemaphores::Signal() 
+void semaphores::Signal() 
 {
     structSemaBuf.sem_num = 0;
     structSemaBuf.sem_op = 1;
