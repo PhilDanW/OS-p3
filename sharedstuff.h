@@ -43,7 +43,7 @@ class semaphores
         semaphores(key_t, bool, int = 1);
         ~semaphores();
         // Check if properly setup
-        bool initialized() { return _initialized; };
+        bool isInitialized() { return _isInitialized; };
         // Semaphore Wait
         void Wait();
         // Semaphore Signal
@@ -51,7 +51,7 @@ class semaphores
     private:
         bool _bCreator;
         int _semid;
-        bool _initialized;
+        bool _isInitialized;
         struct sembuf structSemaBuf;
 };
 
@@ -74,10 +74,10 @@ struct shmseg {
 };
 
 bool WriteToLog(string&, string);
-void semaphores::semaphores(key_t, bool, int);
-void semaphores::~sQwqemaphores();
-void semaphores::Wait();
-void semaphores::Signal();
+void semaphores(key_t, bool, int);
+void ~semaphores();
+void Wait();
+void Signal();
 void prog_use(string);
 
 #endif
