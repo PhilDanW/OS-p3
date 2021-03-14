@@ -132,18 +132,22 @@ int process(string myLog, int producers, int consumers, int seconds) {
   
   
 void produce_consume(bool isDead, int SigIntFlag, time_t elapsed, int seconds) {
-  while(!isDead && !sigIntFlag && !((time(NULL)-elapsed) > seconds) {
+  while(!isDead && !sigIntFlag && !((time(NULL)-elapsed) > seconds) 
+  {
     // Check for new products to consume
     s.Wait();
     
     // Check for a waiting, readyToProcess queue
-    if(productQueue[product.currentItem % QUEUE_SIZE].ready) {
+    if(productQueue[product.currentItem % QUEUE_SIZE].ready) 
+    {
       // For a new consumer
       cout << "process: Assigning " << product.currentItem % QUEUE_SIZE << " to consumer" << endl;
       pid_t pid = fork(consumerProg, myLog, product.currentItem % QUEUE_SIZE);
       
-      for(int i=0; i < consumers; i++) {
-        if(pid > 0) {
+      for(int i=0; i < consumers; i++) 
+      {
+        if(pid > 0) 
+        {
           // Keep track of the new consumer in consumer vector
           consumerArray[i] = pid;
 
@@ -169,21 +173,61 @@ void produce_consume(bool isDead, int SigIntFlag, time_t elapsed, int seconds) {
     }
 
     // Child processed correctly
-    if (WIFEXITED(waitStatus) && wait > 0) {
+    if (WIFEXITED(waitStatus) && wait > 0) 
+    {
         // Remove the consumer from the consumer array
-        for(int i=0; i < (sizeof(producerArray) / sizeof(producerArray[0])) ; i++) {
-            if(consumerArray[i] == waitPID {
-            consumerArray[i] = NULL;
-            break;
+        for(int i=0; i < (sizeof(producerArray) / sizeof(producerArray[0])) ; i++) 
+        {
+            if(consumerArray[i] == waitPID 
+            {
+                consumerArray[i] = NULL;
+                break;
             }
         }
-     } else if (wait && WIFSIGNALED(waitStatus) > 0) {
+     } 
+     else if (wait && WIFSIGNALED(waitStatus) > 0) 
+     {
         cout << "Killed by signal. PID: " << wait << WTERMSIG(waitStatus) << endl;
-     } else if (wait && WIFSIGNALED(waitStatus) > 0) {
+     } 
+     else if (wait && WIFSIGNALED(waitStatus) > 0) 
+     {
         cout << "Stopped by signal. PID: " << wait << WTERMSIG(waitStatus) << endl;
-     } else if (wait && WIFSIGNALED(waitStatus) > 0) {
+     } 
+     else if (wait && WIFSIGNALED(waitStatus) > 0) 
+     {
             continue;
      }
-     }
   }
- }
+}
+               
+int fork(string process, string myLog, int arrayItem)
+{
+        pid_t pid = fork();
+        //if no child is forked, then exit
+        if(pid < 0)
+        {
+            perror("process: Error: failed to fork process");
+            return EXIT_FAILURE;
+        }
+        //if a child if forked, use exec to give it a job to do
+        if(pid == 0)
+        {
+            if(arrayItem < 0) {
+              execl(process.c_str(), process.c_str(), myLog.c_str(), (char*)0);
+            }
+            else {
+              // Convert int to a c_str to send to exec
+              std::string arrayItem = std::to_string(ArrayItem);
+              execl(process.c_str(), process.c_str(), arrayItem.c_str(), myLog.c_str(), (char*)0);
+            }
+
+            fflush(stdout);
+            exit(EXIT_SUCCESS);
+        }
+        else
+            //return the given PID
+            return pid; 
+}
+     
+               
+
