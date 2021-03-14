@@ -73,9 +73,11 @@ struct shmseg {
   int center;
 };
 
+bool WriteToLog(string&, string);
 void semaphores::productSemaphores(key_t, bool, int);
 void semaphores::~productSemaphores();
 void semaphores::Wait();
 void semaphores::Signal();
+void prog_use(string);
 
 #endif
