@@ -29,7 +29,7 @@ void signal_handler(int signal)
     gSignalStatus = signal;
 }
 
-int process(string myLog, int producers, int consumers, int seconds) {
+int monitor(string myLog, int producers, int consumers, int seconds) {
   //register the signal handler
   signal(SIGINT, signal_handler);
   //start the timer;
@@ -39,17 +39,17 @@ int process(string myLog, int producers, int consumers, int seconds) {
   WriteLogFile(log, myLog);
   
   //setup shared memory and allocate a segment with length of the queue * (size of product + size of product queue)
-  int memory = PRODUCT_QUEUE_LENGTH * (sizeof(ProductHeader) + sizeof(ProductItem));
+  int memory = QUEUE_SIZE * (sizeof(ProductHeader) + sizeof(ProductItem));
   shm_id = shmget(KEY_SHMEM, memSize, IPC_CREAT | IPC_EXCL | 0660);
   if (shm_id == -1) {
-      perror("process: Error: could not allocate a segment of shared memory");
+      perror("monitor: Error: could not allocate a segment of shared memory");
       exit(EXIT_FAILURE);
   }
   
   //if the memory segement was properly allocated, attach the segment to the process's address
   shm_addr = (char*)shmat(shm_id, NULL, 0);
   if (!shm_addr) { /* operation failed. */
-      perror("process: Error: could not attach segment to process address");
+      perror("monitor: Error: could not attach segment to process address");
       exit(EXIT_FAILURE);
   }
   
@@ -82,12 +82,12 @@ int process(string myLog, int producers, int consumers, int seconds) {
   }
   int arraysize = sizeof(producerArray) / sizeof(producerArray[0])
       cout << arraysize << endl;
-  cout << "process: Process has started with " << (sizeof(producerArray) / sizeof(producerArray[0])) << " Producers" << endl << endl;
+  cout << "monitor: Process has started with " << (sizeof(producerArray) / sizeof(producerArray[0])) << " Producers" << endl << endl;
 
   if((sizeof(producerArray) / sizeof(producerArray[0])) < 1)
   {
     errno = ECANCELED;
-    perror("process: Error: failed to create the necessary producers.");
+    perror("monitor: Error: failed to create the necessary producers.");
     isDead = true;
   }
   
@@ -112,13 +112,13 @@ int process(string myLog, int producers, int consumers, int seconds) {
   // After all producers and consumers are shutdown, detatch and deallocate the shared memory
   cout << "Time to deallocate the shared memory" << endl;
   if (shmdt(shm_addr) == -1) {
-      perror("process: Error: could not detach the shared memory");
+      perror("monitor: Error: could not detach the shared memory");
   }
   else if (shmctl(shm_id, IPC_RMID, NULL) == -1) {
-      perror("process: Error: could not deallocate the shared memory ");
+      perror("monitor: Error: could not deallocate the shared memory ");
   }
   else {
-      cout << "LibMonitor: Shared memory De-allocated" << endl << endl;
+      cout << "monitor: Shared memory De-allocated" << endl << endl;
   }
     
   log = "The producers and consumers have been shutdown and all memory deallocated";
@@ -141,7 +141,7 @@ void produce_consume(bool isDead, int SigIntFlag, time_t elapsed, int seconds) {
     if(productQueue[product.currentItem % QUEUE_SIZE].ready) 
     {
       // For a new consumer
-      cout << "process: Assigning " << product.currentItem % QUEUE_SIZE << " to consumer" << endl;
+      cout << "monitor: Assigning " << product.currentItem % QUEUE_SIZE << " to consumer" << endl;
       pid_t pid = fork(consumerProg, myLog, product.currentItem % QUEUE_SIZE);
       
       for(int i=0; i < consumers; i++) 
@@ -155,7 +155,7 @@ void produce_consume(bool isDead, int SigIntFlag, time_t elapsed, int seconds) {
           product.currentItem = (++product.currentItem) % QUEUE_SIZE;
         
           // Report what happened ** Move Cursor left: \033[3D
-          cout << "process: the consumer pid " << pid << " started" << endl;
+          cout << "monitor: the consumer pid " << pid << " started" << endl;
         }
       }
     }
@@ -206,7 +206,7 @@ int fork(string process, string myLog, int arrayItem)
         //if no child is forked, then exit
         if(pid < 0)
         {
-            perror("process: Error: failed to fork process");
+            perror("monitor: Error: failed to fork process");
             return EXIT_FAILURE;
         }
         //if a child if forked, use exec to give it a job to do
