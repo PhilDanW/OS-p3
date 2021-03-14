@@ -79,7 +79,6 @@ struct shmseg {
   int center;
 };
 
-bool WriteToLog(string&, string);
-string getString(const int);
+
 
 #endif
