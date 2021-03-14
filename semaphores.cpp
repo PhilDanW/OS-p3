@@ -19,7 +19,7 @@ productSemaphores::productSemaphores(key_t key, bool Create, int Value)
             {
                 semctl(_semid, 0, SETVAL, Value);
                 // make it the creator of the semaphore
-                _bCreator = true;
+                creator = true;
                 // show that initialization is successfully done
                 _isInitialized = true;
             }
@@ -28,7 +28,7 @@ productSemaphores::productSemaphores(key_t key, bool Create, int Value)
         {
             // find an already created Semaphore
             _semid = semget(key, 1, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-            _bCreator = false;
+            creator = false;
             if (_semid > 0)
             {
                 // show that initialization is successfully done
@@ -41,7 +41,7 @@ productSemaphores::productSemaphores(key_t key, bool Create, int Value)
 //semaphore class destructor
 productSemaphores::~productSemaphores()
 {
-    if(_bCreator && _isInitialized)
+    if(creator && _isInitialized)
     {
         semctl(_semid, 0, IPC_RMID);
     }
