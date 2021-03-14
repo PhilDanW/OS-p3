@@ -80,9 +80,5 @@ struct shmseg {
 };
 
 bool WriteToLog(string&, string);
-void semaphores(key_t, bool, int);
-void ~semaphores();
-void Wait();
-void Signal();
 
 #endif
