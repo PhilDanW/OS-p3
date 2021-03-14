@@ -13,11 +13,6 @@ using namespace std;
 const int numChildren = 20;
 const int numSeconds = 100;
 
-// Forward declarations
-static void prog_use(std::string);
-
-
-
 // Main - expecting arguments
 int main(int argc, char* argv[])
 {
@@ -64,19 +59,4 @@ int main(int argc, char* argv[])
     // Start the monitor process, returning whatever monitor returns.
     return monitorProcess(lFile, nNumberOfProducers, nNumberOfConsumers, nNumberOfSeconds);
 
-}
-
-
-// Handle errors in input arguments by showing usage screen
-static void prog_use(std::string str)
-{
-    std::cerr << std::endl
-              << "Use:\t" << str << " [-h]" << std::endl
-              << "\t" << str << " [-h] [-o logfile] [-p m] [-c n] [-t time]" << std::endl
-              << "Command Line Options:" << std::endl
-              << "  -o logfile Name of the file to save logs" << std::endl
-              << "  -p m Number of producers" << std::endl
-              << "  -c n Number of consumers" << std::endl
-              << "  -t the time in which the process will terminate"
-              << std::endl << std::endl;
 }
