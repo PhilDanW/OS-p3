@@ -1,5 +1,5 @@
-#ifndef SHAREDSTUFF_H
-#define SHAREDSTUFF_H
+#ifndef SHAREDSTUFF
+#define SHAREDSTUFF
 
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -80,6 +80,6 @@ struct shmseg {
 };
 
 bool WriteToLog(string&, string);
-std::string getString(const int);
+string getString(const int);
 
 #endif
