@@ -19,9 +19,9 @@
 //constants
 //shared memory keys
 const key_t SHARED = 0x12345;
-const key_t MUTEX = 0x12345
-const key_t EMPTY = 0x12346
-const key_t FULL = 0x12347
+const key_t MUTEX = 0x12345;
+const key_t EMPTY = 0x12346;
+const key_t FULL = 0x12347;
 const int QUEUE_SIZE = 25; //size of the queue
 const int MAX_PROCESS = 19;
 const int BUFFER = 8192;
@@ -35,7 +35,7 @@ int shm_id;
 //used to specify where the page is attached
 char* shm_addr;
 //state to decide critical section processing
-enum state {wait, want, in};
+enum state {waiting, wantin, inside};
 
 class semaphores
 {
@@ -52,7 +52,7 @@ class semaphores
         bool _bCreator;
         int _semid;
         bool _initialized;
-        struct sembuf buffer;
+        struct sembuf structSemaBuf;
 };
 
 //structures used to store information used in shared memory
@@ -74,8 +74,8 @@ struct shmseg {
 };
 
 bool WriteToLog(string&, string);
-void semaphores::productSemaphores(key_t, bool, int);
-void semaphores::~productSemaphores();
+void semaphores::semaphores(key_t, bool, int);
+void semaphores::~sQwqemaphores();
 void semaphores::Wait();
 void semaphores::Signal();
 void prog_use(string);
