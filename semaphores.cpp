@@ -6,60 +6,48 @@ using namespace std;
 
 productSemaphores::productSemaphores(key_t key, bool Create, int Value)
 {
-    // If a valid key
+    // If the key is valid
     if(key > 0)
     {
-        // If Creating a new Key
+        // this means we are creating a new key
         if(Create)
         {
-//            #if defined(__linux__)
+            //give semget all its Permissions
             _semid = semget(key, 1, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH | IPC_EXCL | IPC_CREAT);
-//            #else
-//            _semid = semget(key, 1, SEM_R | SEM_A | IPC_EXCL | IPC_CREAT);
-//            #endif
             // If successful, set it's value to Value
             if (_semid > 0)
             {
                 semctl(_semid, 0, SETVAL, Value);
-                // Write success to log file
-
-                // Set as the creator of the Sem
+                // make it the creator of the semaphore
                 _bCreator = true;
-                // Set as properly initialized
+                // show that initialization is successfully done
                 _isInitialized = true;
             }
         }
         else
         {
-            // Get an already created Semaphore
-//            #if defined(__linux__)
-            _semid = semget(key, 1, PERMS);
-//            #else
-//            _semid = semget(key, 1, SEM_R | SEM_A);
-//            #endif
-
-
-//            _semid = semget(key, 1, SEM_R | SEM_A );
+            // find an already created Semaphore
+            _semid = semget(key, 1, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
             _bCreator = false;
             if (_semid > 0)
             {
-                // Set as properly initialized
+                // show that initialization is successfully done
                 _isInitialized = true;
             }
         }
     }
 }
 
+//semaphore class destructor
 productSemaphores::~productSemaphores()
 {
     if(_bCreator && _isInitialized)
     {
         semctl(_semid, 0, IPC_RMID);
-
-        // Log as released
     }
 }
 
+//semaphore wait function
 void productSemaphores::Wait()
 {
     structSemaBuf.sem_num = 0;
@@ -69,7 +57,7 @@ void productSemaphores::Wait()
 //	cout << "wait: " << _semid << endl;
 }
 
-// Semaphore Signal
+// Semaphore Signal function
 void productSemaphores::Signal() 
 {
     structSemaBuf.sem_num = 0;
