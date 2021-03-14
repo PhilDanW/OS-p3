@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
         log.append(myPID);
         log.append(" put item in queue: ");
         log.append(myItem);
-        WriteLogFile(log, myLog);
+        WriteToLog(log, myLog);
       
         head.nextItem =(++head.nextItem) % head.size;
 
