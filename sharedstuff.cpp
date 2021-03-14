@@ -79,7 +79,7 @@ void productSemaphores::Signal()
 //	cout << "signal: " << _semid << endl;
 }
 
-bool WriteLogFile(std::string& logString, std::string LogFile)
+bool WriteToLog(std::string& logString, std::string LogFile)
 {
     // Open a file to write
     std::ofstream logFile (LogFile.c_str(), std::ofstream::out | std::ofstream::app);
