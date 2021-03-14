@@ -80,6 +80,8 @@ int process(string myLog, int producers, int consumers, int seconds) {
       producerArray[i] = pid;(pid);
     }
   }
+  int arraysize = sizeof(producerArray) / sizeof(producerArray[0])
+      cout << arraysize << endl;
   cout << "process: Process has started with " << (sizeof(producerArray) / sizeof(producerArray[0])) << " Producers" << endl << endl;
 
   if((sizeof(producerArray) / sizeof(producerArray[0])) < 1)
@@ -89,7 +91,44 @@ int process(string myLog, int producers, int consumers, int seconds) {
     isDead = true;
   }
   
+  produce_consume(isDead, SigIntFlag, elapsed, seconds);
+    
+  // Shutdown all of the producers
+  cout << "Time to shut down the producers" << endl;
+  for(int i=0; i < (sizeof(producerArray) / sizeof(producerArray[0])); i++)
+  {
+    kill(producerArray[i], SIGQUIT); 
+    cout << producerArray[i] << "has been signaled to shutdown" << endl;
+  }
+
+  // Shutdown all of the consumers
+  cout << "Time to shut down the consumers" << endl;
+  for(int i=0; i < (sizeof(consumerArray) / sizeof(consumerArray[0])); i++)
+  {
+    kill(consumerArray[i], SIGQUIT); 
+    cout << consumerArray[i] << "has been signaled to shutdown" << endl;
+  }
+    
+  // After all producers and consumers are shutdown, detatch and deallocate the shared memory
+  cout << "Time to deallocate the shared memory" << endl;
+  if (shmdt(shm_addr) == -1) {
+      perror("process: Error: could not detach the shared memory");
+  }
+  else if (shmctl(shm_id, IPC_RMID, NULL) == -1) {
+      perror("process: Error: could not deallocate the shared memory ");
+  }
+  else {
+      cout << "LibMonitor: Shared memory De-allocated" << endl << endl;
+  }
+    
+  log = "The producers and consumers have been shutdown and all memory deallocated";
+  WriteLogFile(log, myLog);
+    
+  return EXIT_SUCCESS;
+}
+    
   
+
   
   
 void produce_consume(bool isDead, int SigIntFlag, time_t elapsed, int seconds) {
@@ -98,15 +137,13 @@ void produce_consume(bool isDead, int SigIntFlag, time_t elapsed, int seconds) {
     s.Wait();
     
     // Check for a waiting, readyToProcess queue
-    if(productQueue[product.currentItem % QUEUE_SIZE].ready)
-    {
+    if(productQueue[product.currentItem % QUEUE_SIZE].ready) {
       // For a new consumer
       cout << "process: Assigning " << product.currentItem % QUEUE_SIZE << " to consumer" << endl;
       pid_t pid = fork(consumerProg, myLog, product.currentItem % QUEUE_SIZE);
       
       for(int i=0; i < consumers; i++) {
-        if(pid > 0)
-        {
+        if(pid > 0) {
           // Keep track of the new consumer in consumer vector
           consumerArray[i] = pid;
 
@@ -115,5 +152,38 @@ void produce_consume(bool isDead, int SigIntFlag, time_t elapsed, int seconds) {
         
           // Report what happened ** Move Cursor left: \033[3D
           cout << "process: the consumer pid " << pid << " started" << endl;
+        }
       }
     }
+        
+    // waitpid() suspends execution of the current process until a child specified by pid argument has changed state  
+    // WNOHANG returns immediately if no child has exited.
+    // WUNTRACED returns if a child has stopped
+    // WCONTINUED returns if a stopped child has been resumed
+    wait = waitpid(-1, &waitStatus, WNOHANG | WUNTRACED | WCONTINUED);    
+    
+    //Check to see if no PIDs are in-process
+    if (dead) {
+      isComplete = true; 
+      break;              
+    }
+
+    // Child processed correctly
+    if (WIFEXITED(waitStatus) && wait > 0) {
+        // Remove the consumer from the consumer array
+        for(int i=0; i < (sizeof(producerArray) / sizeof(producerArray[0])) ; i++) {
+            if(consumerArray[i] == waitPID {
+            consumerArray[i] = NULL;
+            break;
+            }
+        }
+     } else if (wait && WIFSIGNALED(waitStatus) > 0) {
+        cout << "Killed by signal. PID: " << wait << WTERMSIG(waitStatus) << endl;
+     } else if (wait && WIFSIGNALED(waitStatus) > 0) {
+        cout << "Stopped by signal. PID: " << wait << WTERMSIG(waitStatus) << endl;
+     } else if (wait && WIFSIGNALED(waitStatus) > 0) {
+            continue;
+     }
+     }
+  }
+ }
