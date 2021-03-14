@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
     log.append(myPID);
     log.append(" Consumed Item in Queue: ");
     log.append(myItem);
-    WriteLogFile(strLog, strLogFile);
+    WriteToLog(strLog, strLogFile);
 
     cout << "Consumer: " << nPid << " consumed item in queue: " << nItemToProcess << endl;
 
