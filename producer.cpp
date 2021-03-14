@@ -1,6 +1,7 @@
 #include <iostream>
 #include <unistd.h>
 #include "sharedstuff.h"
+#include "semaphores.h"
 #include <fstream>
 using namespace std;
 
@@ -19,11 +20,11 @@ int main(int argc, char* argv[])
     srand(time(NULL));
     int sleepTime = rand() % 10 + 1;
     
-    int Pid = getpid();
-    std::string myPid = std::to_string(Pid)
-    string log = "Producer's PID: ";
-    log.append(myPid);
-    log.append(" has started.");
+    int child = getpid();
+    string myPid = getString(child)
+    string strlog = "Producer's PID: ";
+    strlog.append(myPid);
+    strlog.append(" has started.");
     WriteToLog(log, myLog);
   
     semaphores s(MUTEX, false);
@@ -51,15 +52,15 @@ int main(int argc, char* argv[])
         queue[head->nextItem].ready = true;
 
         // Log what happened into System Log
-        std::string myPID = std::to_string(Pid); 
-        std::string myItem = std::to_string(head.nextItem);
-        log = "Producer's PID: ";
-        log.append(myPID);
-        log.append(" put item in queue: ");
-        log.append(myItem);
-        WriteToLog(log, myLog);
+        string myPID = getString(childPID) 
+        string myItem = getString(head->nextItem);
+        strlog = "Producer's PID: ";
+        strlog.append(myPID);
+        strlog.append(" put item in queue: ");
+        strlog.append(myItem);
+        WriteToLog(strlog, myLog);
       
-        head.nextItem =(++head.nextItem) % head.size;
+        head->nextItem =(++head->nextItem) % head->size;
 
         s.Signal();
         n.Signal();
