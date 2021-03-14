@@ -1,5 +1,5 @@
 #include <iostream>
-#include <string.h>
+#include <string>
 #include <vector>
 #include <unistd.h>
 #include "monitor.h"
