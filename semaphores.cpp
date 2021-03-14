@@ -31,6 +31,15 @@ semaphores::semaphores(key_t key, bool Create, int Value) {
     }
 }
 
+// Semaphore Signal function
+void semaphores::Signal() {
+    structSemaBuf.sem_num = 0;
+    structSemaBuf.sem_op = 1;
+    structSemaBuf.sem_flg = 0;
+    semop(_semid, &structSemaBuf, 1);
+//	cout << "signal: " << _semid << endl;
+}
+
 //semaphore class destructor
 semaphores::~semaphores() {
     if(creator && _isInitialized) {
@@ -47,13 +56,6 @@ void semaphores::Wait() {
 //	cout << "wait: " << _semid << endl;
 }
 
-// Semaphore Signal function
-void semaphores::Signal() {
-    structSemaBuf.sem_num = 0;
-    structSemaBuf.sem_op = 1;
-    structSemaBuf.sem_flg = 0;
-    semop(_semid, &structSemaBuf, 1);
-//	cout << "signal: " << _semid << endl;
-}
+
 
 
