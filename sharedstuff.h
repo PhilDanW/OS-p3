@@ -37,6 +37,12 @@ char* shm_addr;
 //state to decide critical section processing
 enum state {waiting, wantin, inside};
 
+struct sembuf {
+    int sem_num;
+    int sem_op;
+    int sem_flag;
+};
+
 class semaphores
 {
     public:
@@ -78,6 +84,5 @@ void semaphores(key_t, bool, int);
 void ~semaphores();
 void Wait();
 void Signal();
-void prog_use(string);
 
 #endif
