@@ -1,11 +1,11 @@
 target := monitor
 sources := $(shell find . -name "main*.cpp")
-objFiles := $(patsubst %.cpp, %.o, $(sources))
+objFiles1 := $(patsubst %.cpp, %.o, $(sources))
 
 all: $(target)
 
 $(target): $(objFiles)
-    $(CXX) $(CXXFLAGS) -o $(target) $(objFiles)
+    $(CXX) $(CXXFLAGS) -o $(target) $(objFiles1)
 
 target2 := producer
 sources2 := $(shell find . -name "producer*.cpp")
