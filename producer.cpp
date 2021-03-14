@@ -4,8 +4,6 @@
 #include <fstream>
 using namespace std;
 
-
-
 volatile sig_atomic_t gSignalStatus = 0;
 void signal_handler(int signal)
 {
@@ -14,12 +12,13 @@ void signal_handler(int signal)
 
 int main(int argc, char* argv[])
 {
-    int item = atoi(argv[1]);
-    string myLog = argv[2];
+    signal(SIGINT, signal_handler);
+    
+    
+    string myLog = argv[1];
     srand(time(NULL));
     int sleepTime = rand() % 10 + 1;
-    signal(SIGINT, signal_handler);
-  
+    
     int Pid = getpid();
     std::string myPid = std::to_string(Pid)
     string log = "Producer's PID: ";
@@ -27,9 +26,9 @@ int main(int argc, char* argv[])
     log.append(" has started.");
     WriteToLog(log, myLog);
   
-    productSemaphores s(KEY_MUTEX, false);
-    productSemaphores n(KEY_EMPTY, false);
-    productSemaphores e(KEY_FULL, false);
+    semaphores s(MUTEX, false);
+    semaphores n(EMPTY, false);
+    semaphores e(FULL, false);
   
     allocateMemory();
   
@@ -42,8 +41,7 @@ int main(int argc, char* argv[])
     {
         int sleepTime = rand() % 5 + 1;
         sleep(sleepTime);
-    
-  
+
         e.Wait();
         s.Wait();
       
@@ -60,8 +58,6 @@ int main(int argc, char* argv[])
         log.append(" put item in queue: ");
         log.append(myItem);
         WriteLogFile(log, myLog);
-
-        cout << log << endl;
       
         head.nextItem =(++head.nextItem) % head.size;
 
@@ -73,7 +69,7 @@ int main(int argc, char* argv[])
 
 void allocateMemory() {
   
-  shm_id = shmget(KEY_SHMEM, 0, 0);
+  shm_id = shmget(SHARED, 0, 0);
   if (shm_id == -1) {
       perror("consumer: Error: failed to find shm_id " << shm_id << endl);
       exit(EXIT_FAILURE);
@@ -85,7 +81,7 @@ void allocateMemory() {
   size_t realSize = shmid_ds.shm_segsz;
 
   // use shmget to setup with the size of the memory
-  shm_id = shmget(KEY_SHMEM, realSize, 0);
+  shm_id = shmget(SHARED, realSize, 0);
   if (shm_id == -1) {
       perror("consumer: Error: failed to setup memory with shmget");
       exit(EXIT_FAILURE);
