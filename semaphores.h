@@ -14,8 +14,9 @@ class semaphores
         void Wait();
         // Semaphore Signal
         void Signal();  
+    
     private:
-        bool _bCreator;
+        bool _creator;
         int _semid;
         bool _isInitialized;
         struct sembuf structSemaBuf;
