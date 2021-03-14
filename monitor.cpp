@@ -35,7 +35,7 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
   elapSeconds = time(NULL);
   
   log = "Monitor process has begun...\n";
-  WriteLogFile(log, myLog);
+  WriteToLog(log, myLog);
   
   allocateMemory();
   
@@ -54,7 +54,7 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
   }
   
   log = "Beginning process with the producers";
-  WriteLogFile(log, myLog);
+  WriteToLog(log, myLog);
   
   // Start up producers by fork/exec nNumberOfProducers
   for(int i=0; i < producers; i++)
