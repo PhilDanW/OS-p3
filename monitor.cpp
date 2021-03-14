@@ -203,8 +203,8 @@ int fork(string process, string myLog, int arrayItem)
             }
             else {
               // Convert int to a c_str to send to exec
-              std::string arrayItem = std::to_string(arrayItem);
-              execl(process.c_str(), process.c_str(), arrayItem.c_str(), myLog.c_str(), (char*)0);
+              string arrItem = getString(arrayItem);
+              execl(process.c_str(), process.c_str(), arrItem.c_str(), myLog.c_str(), (char*)0);
             }
 
             fflush(stdout);
