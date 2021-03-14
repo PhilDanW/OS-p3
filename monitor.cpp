@@ -13,10 +13,10 @@ static int processes = 19;
 static int buffer = 5120;
 int consumerCount = 0;
 time_t elapSeconds = NULL;
-string log = NULL;
+string logstr = NULL;
 bool isDead = false;
 bool isComplete = false;
-pid_t wait;
+pid_t waitPID;
 int waitStatus;
 
 int producerArray[100] = {0};
@@ -34,8 +34,8 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
   //start the timer;
   elapSeconds = time(NULL);
   
-  log = "Monitor process has begun...\n";
-  WriteToLog(log, myLog);
+  logstr = "Monitor process has begun...\n";
+  WriteToLog(logstr, myLog);
   
   allocateMemory();
   
@@ -53,8 +53,8 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
       productQueue[i].ready = false;  
   }
   
-  log = "Beginning process with the producers";
-  WriteToLog(log, myLog);
+  logstr = "Beginning process with the producers";
+  WriteToLog(logstr, myLog);
   
   // Start up producers by fork/exec nNumberOfProducers
   for(int i=0; i < producers; i++)
@@ -152,7 +152,7 @@ void produce_consume(bool isDead, int SigIntFlag, time_t elapsed, int seconds) {
     // WNOHANG returns immediately if no child has exited.
     // WUNTRACED returns if a child has stopped
     // WCONTINUED returns if a stopped child has been resumed
-    wait = waitpid(-1, &waitStatus, WNOHANG | WUNTRACED | WCONTINUED);    
+    waitPID = waitpid(-1, &waitStatus, WNOHANG | WUNTRACED | WCONTINUED);    
     
     //Check to see if no PIDs are in-process
     if (isDead) {
@@ -161,7 +161,7 @@ void produce_consume(bool isDead, int SigIntFlag, time_t elapsed, int seconds) {
     }
 
     // if the child process was done correctly
-    if (WIFEXITED(waitStatus) && wait > 0) 
+    if (WIFEXITED(waitStatus) && waitPID > 0) 
     {
         // take the consumer out of the consumer array
         for(int i=0; i < consArraySize ; i++) 
@@ -173,15 +173,15 @@ void produce_consume(bool isDead, int SigIntFlag, time_t elapsed, int seconds) {
             }
         }
      } 
-     else if (wait && WIFSIGNALED(waitStatus) > 0) 
+     else if (waitPID && WIFSIGNALED(waitStatus) > 0) 
      {
         cout << "Killed by signal. PID: " << wait << WTERMSIG(waitStatus) << endl;
      } 
-     else if (wait && WIFSIGNALED(waitStatus) > 0) 
+     else if (waitPID && WIFSIGNALED(waitStatus) > 0) 
      {
         cout << "Stopped by signal. PID: " << wait << WTERMSIG(waitStatus) << endl;
      } 
-     else if (wait && WIFSIGNALED(waitStatus) > 0) 
+     else if (waitPID && WIFSIGNALED(waitStatus) > 0) 
      {
             continue;
      }
