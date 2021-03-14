@@ -1,3 +1,6 @@
+#ifndef SHAREDSTUFF_H
+#define SHAREDSTUFF_H
+
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <errno.h>
@@ -15,16 +18,17 @@
 
 //constants
 //shared memory keys
-const key_t sharedKey;
-const key_t mutexKey;
-const key_t emptyKey;
-const key_t fullKey;
+const key_t SHARED = 0x12345;
+const key_t MUTEX = 0x12345
+const key_t EMPTY = 0x12346
+const key_t FULL = 0x12347
 const int QUEUE_SIZE = 25; //size of the queue
 const int MAX_PROCESS = 19;
 const int BUFFER = 8192;
 const char* producerProg = "./produce";
 const char* consumerProg = "./consume";
 const char* writeLog = "./Monitor.log";
+extern int opterr;
 
 // this variable is used to hold the returned segment identifier
 int shm_id;
@@ -33,42 +37,44 @@ char* shm_addr;
 //state to decide critical section processing
 enum state {wait, want, in};
 
+class semaphores
+{
+    public:
+        semaphores(key_t, bool, int = 1);
+        ~semaphores();
+        // Check if properly setup
+        bool initialized() { return _initialized; };
+        // Semaphore Wait
+        void Wait();
+        // Semaphore Signal
+        void Signal();  
+    private:
+        bool _bCreator;
+        int _semid;
+        bool _initialized;
+        struct sembuf buffer;
+};
+
 //structures used to store information used in shared memory
 struct itemPointer {
   int size;
   int nextItem;
   int currentItem;
 };
+
 struct itemInfo {
   int value;
   bool ready;
 };
+
 struct shmseg {
   int write;
   int read;
   int center;
 };
 
-//opterr defined here as extern variable
-extern int opterr;
 
-bool WriteLogFile(std::string& logString, std::string LogFile)
-{
-    // Open a file to write
-    std::ofstream logFile (LogFile.c_str(), std::ofstream::out | std::ofstream::app);
-    if (logFile.is_open())
-    {
-        // Get the current local time
-//        string 
-        logFile << GetTimeFormatted("").c_str();
-        logFile << " " << logString.c_str();
-        logFile << std::endl;
-        logFile.close();
-        return true;
-    }
-    else
-    {
-        perror("Failed to write to the log");
-        return false;
-    }
-}
+
+
+
+#endif
