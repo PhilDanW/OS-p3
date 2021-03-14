@@ -43,24 +43,6 @@ struct sembuf {
     int sem_flag;
 };
 
-class semaphores
-{
-    public:
-        semaphores(key_t, bool, int = 1);
-        ~semaphores();
-        // Check if properly setup
-        bool isInitialized() { return _isInitialized; };
-        // Semaphore Wait
-        void Wait();
-        // Semaphore Signal
-        void Signal();  
-    private:
-        bool _bCreator;
-        int _semid;
-        bool _isInitialized;
-        struct sembuf structSemaBuf;
-};
-
 //structures used to store information used in shared memory
 struct itemPointer {
   int size;
@@ -79,6 +61,7 @@ struct shmseg {
   int center;
 };
 
+//function used to write to the log file
 bool WriteToLog(std::string& logString, std::string LogFile)
 {
     // Open a file to write
@@ -100,6 +83,8 @@ bool WriteToLog(std::string& logString, std::string LogFile)
     }
 }
 
+//since there is no easy way to get a string from a int in C++
+//this function converts an int value into a string
 std::string getString(const int nVal)
 {
     int length = snprintf( NULL, 0, "%d", nVal);
