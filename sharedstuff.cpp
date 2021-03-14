@@ -99,3 +99,13 @@ bool WriteToLog(std::string& logString, std::string LogFile)
         return false;
     }
 }
+
+std::string getString(const int nVal)
+{
+    int length = snprintf( NULL, 0, "%d", nVal);
+    char* sDep = (char*)malloc( length + 1 );
+    snprintf( sDep, length + 1, "%d", nVal);
+    std::string strFinalVal = sDep;                    
+    free(sDep);
+    return strFinalVal;
+}
