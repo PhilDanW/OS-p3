@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include "monitor.h"
+#include "sharedstuff.h"
 using namespace std;
 
 // Constant values for the max number of children and seconds allowed
@@ -17,7 +18,7 @@ int main(int argc, char* argv[])
 {
     string logFile = "This is the LogFile";
     int option;
-    int producers = 2
+    int producers = 2;
     int consumers = 6;
     int timeSeconds = 100;
 
@@ -75,8 +76,8 @@ int main(int argc, char* argv[])
     }
   
     // output the parameters that are going to be sent to the monitor process
-    cout << producers << " is the number of Producers" << endl
-    cout << consumers << " is the number of Consumers" << endl
+    cout << producers << " is the number of Producers" << endl;
+    cout << consumers << " is the number of Consumers" << endl;
     cout << timeSeconds << "is the number of Seconds" << endl;
 
     // Start the monitor process, returning whatever monitor returns.
