@@ -6,11 +6,10 @@
 #include <unistd.h>
 #include <errno.h>
 #include "monitor.h"
-#include "sharedstuff.h"
 using namespace std;
 
 // Constant values for the max number of children and seconds allowed
-const int children = 20;
+const int children = 19;
 const int seconds = 100;
 
 static void prog_use(std::string);
