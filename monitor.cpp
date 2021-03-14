@@ -2,9 +2,8 @@
 #include <string.h>
 #include <vector>
 #include <unistd.h>
-#include "process.h"
-#include "stuff.h"
-#include "productSemaphores.h"
+#include "monitor.h"
+#include "sharedstuff.h"
 using namespace std;
 
 struct itemPointer* product;
@@ -38,20 +37,7 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
   log = "Monitor process has begun...\n";
   WriteLogFile(log, myLog);
   
-  //setup shared memory and allocate a segment with length of the queue * (size of product + size of product queue)
-  int memory = QUEUE_SIZE * (sizeof(ProductHeader) + sizeof(ProductItem));
-  shm_id = shmget(KEY_SHMEM, memSize, IPC_CREAT | IPC_EXCL | 0660);
-  if (shm_id == -1) {
-      perror("monitor: Error: could not allocate a segment of shared memory");
-      exit(EXIT_FAILURE);
-  }
-  
-  //if the memory segement was properly allocated, attach the segment to the process's address
-  shm_addr = (char*)shmat(shm_id, NULL, 0);
-  if (!shm_addr) { /* operation failed. */
-      perror("monitor: Error: could not attach segment to process address");
-      exit(EXIT_FAILURE);
-  }
+  allocateMemory();
   
   // Get the queue header and the queue of products
   product = (struct ProductHeader*) (shm_addr);
@@ -74,17 +60,19 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
   for(int i=0; i < producers; i++)
   {
     // Fork and store pid Producer Vector
-    pid_t pid = forkProcess(producerProg, myLog);
+    pid_t pid = fork(producerProg, myLog);
     if(pid > 0)
     {
-      producerArray[i] = pid;(pid);
+      producerArray[i] = pid;
     }
   }
-  int arraysize = sizeof(producerArray) / sizeof(producerArray[0])
-      cout << arraysize << endl;
-  cout << "monitor: Process has started with " << (sizeof(producerArray) / sizeof(producerArray[0])) << " Producers" << endl << endl;
+  int prodArraySize = sizeof(producerArray) / sizeof(producerArray[0]);
+  int consArraySize = sizeof(consumerArray) / sizeof(consumerArray[0]);
+  cout << prodArraySize << endl;
+  cout << consArraySize << endl;
+  cout << "monitor: Process has started with " << prodArraySize << " Producers" << endl << endl;
 
-  if((sizeof(producerArray) / sizeof(producerArray[0])) < 1)
+  if(prodArraySize < 1)
   {
     errno = ECANCELED;
     perror("monitor: Error: failed to create the necessary producers.");
@@ -95,7 +83,7 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
     
   // Shutdown all of the producers
   cout << "Time to shut down the producers" << endl;
-  for(int i=0; i < (sizeof(producerArray) / sizeof(producerArray[0])); i++)
+  for(int i=0; i < prodArraySize; i++)
   {
     kill(producerArray[i], SIGQUIT); 
     cout << producerArray[i] << "has been signaled to shutdown" << endl;
@@ -103,7 +91,7 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
 
   // Shutdown all of the consumers
   cout << "Time to shut down the consumers" << endl;
-  for(int i=0; i < (sizeof(consumerArray) / sizeof(consumerArray[0])); i++)
+  for(int i=0; i < consArraySize; i++)
   {
     kill(consumerArray[i], SIGQUIT); 
     cout << consumerArray[i] << "has been signaled to shutdown" << endl;
@@ -144,20 +132,20 @@ void produce_consume(bool isDead, int SigIntFlag, time_t elapsed, int seconds) {
       cout << "monitor: Assigning " << product.currentItem % QUEUE_SIZE << " to consumer" << endl;
       pid_t pid = fork(consumerProg, myLog, product.currentItem % QUEUE_SIZE);
       
-      for(int i=0; i < consumers; i++) 
-      {
+      
         if(pid > 0) 
         {
-          // Keep track of the new consumer in consumer vector
-          consumerArray[i] = pid;
+          for(int i=0; i < consumers; i++) 
+          {
+              // Keep track of the new consumer in consumer vector
+              consumerArray[i] = pid;
 
-          // Increment Current Index and wrap it around if > queue size
-          product.currentItem = (++product.currentItem) % QUEUE_SIZE;
-        
-          // Report what happened ** Move Cursor left: \033[3D
-          cout << "monitor: the consumer pid " << pid << " started" << endl;
-        }
-      }
+              // Increment Current Index and wrap it around if > queue size
+              product.currentItem = (++product.currentItem) % QUEUE_SIZE;
+           }
+           // Report what happened ** Move Cursor left: \033[3D
+           cout << "monitor: the consumer pid " << pid << " started" << endl;
+         }
     }
         
     // waitpid() suspends execution of the current process until a child specified by pid argument has changed state  
@@ -167,16 +155,16 @@ void produce_consume(bool isDead, int SigIntFlag, time_t elapsed, int seconds) {
     wait = waitpid(-1, &waitStatus, WNOHANG | WUNTRACED | WCONTINUED);    
     
     //Check to see if no PIDs are in-process
-    if (dead) {
+    if (isDead) {
       isComplete = true; 
       break;              
     }
 
-    // Child processed correctly
+    // if the child process was done correctly
     if (WIFEXITED(waitStatus) && wait > 0) 
     {
-        // Remove the consumer from the consumer array
-        for(int i=0; i < (sizeof(producerArray) / sizeof(producerArray[0])) ; i++) 
+        // take the consumer out of the consumer array
+        for(int i=0; i < consArraySize ; i++) 
         {
             if(consumerArray[i] == waitPID 
             {
@@ -227,6 +215,23 @@ int fork(string process, string myLog, int arrayItem)
         else
             //return the given PID
             return pid; 
+}
+               
+//setup shared memory and allocate a segment with length of the queue * (size of product + size of product queue)
+void allocateMemory() {
+    int memory = QUEUE_SIZE * (sizeof(itemPointer) + sizeof(itemInfo));
+    shm_id = shmget(KEY_SHMEM, memory, IPC_CREAT | IPC_EXCL | 0660);
+    if (shm_id == -1) {
+        perror("monitor: Error: could not allocate a segment of shared memory");
+        exit(EXIT_FAILURE);
+    }
+  
+    //if the memory segement was properly allocated, attach the segment to the process's address
+    shm_addr = (char*)shmat(shm_id, NULL, 0);
+    if (!shm_addr) { /* operation failed. */
+        perror("monitor: Error: could not attach segment to process address");
+        exit(EXIT_FAILURE);
+    }
 }
      
                
