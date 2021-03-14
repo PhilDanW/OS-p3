@@ -26,6 +26,10 @@ const char* producerProg = "./produce";
 const char* consumerProg = "./consume";
 const char* writeLog = "./Monitor.log";
 
+// this variable is used to hold the returned segment identifier
+int shm_id;
+//used to specify where the page is attached
+char* shm_addr;
 //state to decide critical section processing
 enum state {wait, want, in};
 
@@ -44,11 +48,6 @@ struct shmseg {
   int read;
   int center;
 };
-
-// this variable is used to hold the returned segment identifier
-int shm_id;
-//used to specify where the page is attached
-char* shm_addr;
 
 //opterr defined here as extern variable
 extern int opterr;
