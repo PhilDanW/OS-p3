@@ -78,3 +78,24 @@ void productSemaphores::Signal()
     semop(_semid, &structSemaBuf, 1);
 //	cout << "signal: " << _semid << endl;
 }
+
+bool WriteLogFile(std::string& logString, std::string LogFile)
+{
+    // Open a file to write
+    std::ofstream logFile (LogFile.c_str(), std::ofstream::out | std::ofstream::app);
+    if (logFile.is_open())
+    {
+        // Get the current local time
+//        string 
+        logFile << GetTimeFormatted("").c_str();
+        logFile << " " << logString.c_str();
+        logFile << std::endl;
+        logFile.close();
+        return true;
+    }
+    else
+    {
+        perror("Failed to write to the log");
+        return false;
+    }
+}
