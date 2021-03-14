@@ -13,6 +13,8 @@ using namespace std;
 const int children = 20;
 const int seconds = 100;
 
+static void prog_use(std::string);
+
 //gather command line arguments here
 int main(int argc, char* argv[])
 {
