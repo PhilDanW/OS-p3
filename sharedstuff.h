@@ -80,5 +80,6 @@ struct shmseg {
 };
 
 bool WriteToLog(string&, string);
+std::string getString(const int);
 
 #endif
