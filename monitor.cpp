@@ -11,13 +11,7 @@ struct itemInfo* productQueue;
 
 static int processes = 19;
 static int buffer = 5120;
-int consumerCount = 0;
-time_t elapSeconds = NULL;
-string logstr = NULL;
-bool isDead = false;
-bool isComplete = false;
-pid_t waitPID;
-int waitStatus;
+
 
 int producerArray[100] = {0};
 int consumerArray[100] = {0};
@@ -25,26 +19,38 @@ int consumerArray[100] = {0};
 volatile sig_atomic_t gSignalStatus = 0;
 void signal_handler(int signal)
 {
-    gSignalStatus = signal;
+    gSignalStatus = 1;
 }
 
 int monitor(string myLog, int producers, int consumers, int seconds) {
   //register the signal handler
   signal(SIGINT, signal_handler);
   //start the timer;
+  int consumerCount = 0;
+  time_t elapSeconds = NULL;
+  string logstr = NULL;
+  bool isDead = false;
+  bool isComplete = false;
+  pid_t waitPID;
+  int waitStatus;  
   elapSeconds = time(NULL);
   
   logstr = "Monitor process has begun...\n";
   WriteToLog(logstr, myLog);
+    
+  // Create the Semaphores
+  semaphores s(MUTEX, true, 1);
+  semaphores n(EMPTY, true, 0);
+  semaphores e(FULL, true, QUEUE_SIZE);
   
   allocateMemory();
   
   // Get the queue header and the queue of products
-  product = (struct ProductHeader*) (shm_addr);
-  product.currentItem = 0;
-  product.nextItem = 0;
-  product.size = QUEUE_SIZE;
-  productQueue = (struct ProductItem*) (shm_addr+sizeof(int)+sizeof(productHeader));
+  product = (struct itemPointer*) (shm_addr);
+  product->currentItem = 0;
+  product->nextItem = 0;
+  product->size = QUEUE_SIZE;
+  productQueue = (struct itemInfo*) (shm_addr+sizeof(int)+sizeof(product));
 
   
   for(int i=0; i < QUEUE_SIZE; i++)
@@ -79,7 +85,7 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
     isDead = true;
   }
   
-  produce_consume(isDead, SigIntFlag, elapsed, seconds);
+  produce_consume(isDead, gSignalStatus, elapsed, seconds);
     
   // Shutdown all of the producers
   cout << "Time to shut down the producers" << endl;
@@ -119,8 +125,8 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
 
   
   
-void produce_consume(bool isDead, int SigIntFlag, time_t elapsed, int seconds) {
-  while(!isDead && !sigIntFlag && !((time(NULL)-elapsed) > seconds) 
+void produce_consume(bool isDead, int gSignalStatus, time_t elapsed, int seconds) {
+  while(!isDead && !gSignalStatus && !((time(NULL)-elapsed) > seconds))
   {
     // Check for new products to consume
     s.Wait();
