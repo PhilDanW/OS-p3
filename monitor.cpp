@@ -85,7 +85,72 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
     isDead = true;
   }
   
-  produce_consume(isDead, gSignalStatus, elapsed, seconds);
+  while(!isDead && !gSignalStatus && !((time(NULL)-elapSeconds) > seconds))
+  {
+    // Check for new products to consume
+    s.Wait();
+    
+    // Check for a waiting, readyToProcess queue
+    if(productQueue[product->currentItem % QUEUE_SIZE].ready) 
+    {
+      // For a new consumer
+      cout << "monitor: Assigning " << product->currentItem % QUEUE_SIZE << " to consumer" << endl;
+      pid_t pid = fork(consumerProg, myLog, product->currentItem % QUEUE_SIZE);
+      
+      
+        if(pid > 0) 
+        {
+          for(int i=0; i < consumers; i++) 
+          {
+              // Keep track of the new consumer in consumer vector
+              consumerArray[i] = pid;
+
+              // Increment Current Index and wrap it around if > queue size
+              product->currentItem = (++product->currentItem) % QUEUE_SIZE;
+           }
+           // Report what happened ** Move Cursor left: \033[3D
+           cout << "monitor: the consumer pid " << pid << " started" << endl;
+         }
+    }
+        
+    // waitpid() suspends execution of the current process until a child specified by pid argument has changed state  
+    // WNOHANG returns immediately if no child has exited.
+    // WUNTRACED returns if a child has stopped
+    // WCONTINUED returns if a stopped child has been resumed
+    waitPID = waitpid(-1, &waitStatus, WNOHANG | WUNTRACED | WCONTINUED);    
+    
+    //Check to see if no PIDs are in-process
+    if (isDead) {
+      isComplete = true; 
+      break;              
+    }
+
+    // if the child process was done correctly
+    if (WIFEXITED(waitStatus) && waitPID > 0) 
+    {
+        // take the consumer out of the consumer array
+        for(int i=0; i < consArraySize ; i++) 
+        {
+            if(consumerArray[i] == waitPID) 
+            {
+                consumerArray[i] = NULL;
+                break;
+            }
+        }
+     } 
+     else if (waitPID && WIFSIGNALED(waitStatus) > 0) 
+     {
+        cout << "Killed by signal. PID: " << wait << WTERMSIG(waitStatus) << endl;
+     } 
+     else if (waitPID && WIFSIGNALED(waitStatus) > 0) 
+     {
+        cout << "Stopped by signal. PID: " << wait << WTERMSIG(waitStatus) << endl;
+     } 
+     else if (waitPID && WIFSIGNALED(waitStatus) > 0) 
+     {
+            continue;
+     }
+  }
     
   // Shutdown all of the producers
   cout << "Time to shut down the producers" << endl;
@@ -115,83 +180,10 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
       cout << "monitor: Shared memory De-allocated" << endl << endl;
   }
     
-  log = "The producers and consumers have been shutdown and all memory deallocated";
-  WriteLogFile(log, myLog);
+  logstr = "The producers and consumers have been shutdown and all memory deallocated";
+  WriteToLog(logstr, myLog);
     
   return EXIT_SUCCESS;
-}
-    
-  
-
-  
-  
-void produce_consume(bool isDead, int gSignalStatus, time_t elapsed, int seconds) {
-  while(!isDead && !gSignalStatus && !((time(NULL)-elapsed) > seconds))
-  {
-    // Check for new products to consume
-    s.Wait();
-    
-    // Check for a waiting, readyToProcess queue
-    if(productQueue[product.currentItem % QUEUE_SIZE].ready) 
-    {
-      // For a new consumer
-      cout << "monitor: Assigning " << product.currentItem % QUEUE_SIZE << " to consumer" << endl;
-      pid_t pid = fork(consumerProg, myLog, product.currentItem % QUEUE_SIZE);
-      
-      
-        if(pid > 0) 
-        {
-          for(int i=0; i < consumers; i++) 
-          {
-              // Keep track of the new consumer in consumer vector
-              consumerArray[i] = pid;
-
-              // Increment Current Index and wrap it around if > queue size
-              product.currentItem = (++product.currentItem) % QUEUE_SIZE;
-           }
-           // Report what happened ** Move Cursor left: \033[3D
-           cout << "monitor: the consumer pid " << pid << " started" << endl;
-         }
-    }
-        
-    // waitpid() suspends execution of the current process until a child specified by pid argument has changed state  
-    // WNOHANG returns immediately if no child has exited.
-    // WUNTRACED returns if a child has stopped
-    // WCONTINUED returns if a stopped child has been resumed
-    waitPID = waitpid(-1, &waitStatus, WNOHANG | WUNTRACED | WCONTINUED);    
-    
-    //Check to see if no PIDs are in-process
-    if (isDead) {
-      isComplete = true; 
-      break;              
-    }
-
-    // if the child process was done correctly
-    if (WIFEXITED(waitStatus) && waitPID > 0) 
-    {
-        // take the consumer out of the consumer array
-        for(int i=0; i < consArraySize ; i++) 
-        {
-            if(consumerArray[i] == waitPID 
-            {
-                consumerArray[i] = NULL;
-                break;
-            }
-        }
-     } 
-     else if (waitPID && WIFSIGNALED(waitStatus) > 0) 
-     {
-        cout << "Killed by signal. PID: " << wait << WTERMSIG(waitStatus) << endl;
-     } 
-     else if (waitPID && WIFSIGNALED(waitStatus) > 0) 
-     {
-        cout << "Stopped by signal. PID: " << wait << WTERMSIG(waitStatus) << endl;
-     } 
-     else if (waitPID && WIFSIGNALED(waitStatus) > 0) 
-     {
-            continue;
-     }
-  }
 }
                
 int fork(string process, string myLog, int arrayItem)
