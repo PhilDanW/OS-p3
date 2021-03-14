@@ -73,8 +73,9 @@ struct shmseg {
   int center;
 };
 
-
-
-
+void semaphores::productSemaphores(key_t, bool, int);
+void semaphores::~productSemaphores();
+void semaphores::Wait();
+void semaphores::Signal();
 
 #endif
