@@ -59,19 +59,18 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
   
     
   cout << "made it to memory allocation" << endl;
-  int memory = sizeof(itemPointer) + sizeof(itemInfo) * QUEUE_SIZE ;
-    shm_id = shmget(SHARED, memory, IPC_CREAT | 0666);
-    if (shm_id == -1) {
+  shm_id = shmget(SHARED, sizeof(float)*40000000, IPC_CREAT | 0666);
+  if (shm_id == -1) {
         perror("monitor: Error: could not allocate a segment of shared memory");
         exit(EXIT_FAILURE);
-    }
+  }
   
-    //if the memory segement was properly allocated, attach the segment to the process's address
-    shm_addr = (char*)shmat(shm_id, NULL, 0);
-    if (!shm_addr) { /* operation failed. */
+  //if the memory segement was properly allocated, attach the segment to the process's address
+  shm_addr = (char*)shmat(shm_id, NULL, 0);
+  if (!shm_addr) { /* operation failed. */
         perror("monitor: Error: could not attach segment to process address");
         exit(EXIT_FAILURE);
-    }
+  }
   
   // Get the queue header and the queue of products
   product = (struct itemPointer*) (shm_addr);
