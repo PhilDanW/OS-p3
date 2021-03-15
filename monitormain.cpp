@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
-#include "monitor.h"
+#include "libmonitor.h"
 using namespace std;
 
 // Constant values for the max number of children and seconds allowed
