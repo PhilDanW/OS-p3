@@ -26,6 +26,8 @@ void signal_handler(int signal)
 //this is the main process to start the monitor
 //during this process producers and consumers will be created as they are needed
 int monitor(int producers, int consumers, int seconds) {
+  
+  cout << "made it to the monitor process" << endl;
   //register the signal handler
   signal(SIGINT, signal_handler);
   //create all variables needed
