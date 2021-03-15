@@ -72,23 +72,6 @@ std::string getTheTime(const char* prePendString) {
     return strReturn;
 }
 
-//function used to write to the log file
-bool WriteLogFile(std::string& logString, std::string LogFile) {
-    // Open a file to write
-    std::ofstream logFile (LogFile.c_str(), std::ofstream::out | std::ofstream::app);
-    if (logFile.is_open()) {
-        logFile << getTheTime("").c_str();
-        logFile << " " << logString.c_str();
-        logFile << std::endl;
-        logFile.close();
-        return true;
-    }
-    else {
-        perror("Failed to write to the log");
-        return false;
-    }
-}
-
 //since there is no easy way to get a string from a int in C++
 //this function converts an int value into a string
 std::string getString(const int nVal) {
