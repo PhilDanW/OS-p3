@@ -18,10 +18,10 @@
 
 //constants
 //shared memory keys
-const key_t SHARED = 0x12345;
-const key_t MUTEX = 0x12345;
-const key_t EMPTY = 0x12346;
-const key_t FULL = 0x12347;
+const key_t SHARED = 0x54321;
+const key_t MUTEX = 0x54321;
+const key_t EMPTY = 0x54322;
+const key_t FULL = 0x54323;
 const int QUEUE_SIZE = 20; //size of the queue
 const int MAX_PROCESS = 19;
 const int BUFFER = 8192;
