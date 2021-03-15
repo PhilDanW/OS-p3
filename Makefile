@@ -1,5 +1,5 @@
 target1 := monitor
-source1 := $(shell find . -name "monitor*.cpp") ./semaphores.cpp
+source1 := $(shell find . -name "main*.cpp") ./semaphores.cpp
 
 LDLIBS := monitor.a
 objFiles1  := $(patsubst %.cpp, %.o, $(source1))
