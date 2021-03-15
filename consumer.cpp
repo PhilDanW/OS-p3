@@ -26,7 +26,17 @@ int main(int argc, char* argv[])
     string logstr = "Consumer's PID: ";
     logstr.append(myPID);
     logstr.append(" has started."
-    WriteLogFile(logstr, myLog);
+    ofstream ofoutputFile (myLog, ios::app);
+    if (myLog.is_open()) {
+        ofoutputFile << getTheTime("").c_str();
+                     << " " << logstr.c_str();
+                     << std::endl;
+        ofoutputFile.close();
+    }
+    else {
+        perror("Failed to write to the log");
+        return false;
+    }
   
     semaphores mutex(MUTEX, false);
     semaphores null(EMPTY, false);
@@ -62,7 +72,18 @@ int main(int argc, char* argv[])
     logstr.append(myPID);
     logstr.append(" consumed the item: ");
     logstr.append(myItem);
-    WriteLogFile(logstr, myLog);
+    
+    ofstream ofoutputFile (myLog, ios::app);
+    if (myLog.is_open()) {
+        ofoutputFile << getTheTime("").c_str();
+                     << " " << logstr.c_str();
+                     << std::endl;
+        ofoutputFile.close();
+    }
+    else {
+        perror("Failed to write to the log");
+        return false;
+    }
 
     cout << "Consumer: " << Pid << " consumed the item: " << item << endl;
 
