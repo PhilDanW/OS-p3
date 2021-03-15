@@ -17,6 +17,7 @@ static void prog_use(std::string);
 //gather command line arguments here
 int main(int argc, char* argv[])
 {
+    string strLogFile = "logfile";
     int option;
     int producers = 2;
     int consumers = 6;
@@ -31,7 +32,7 @@ int main(int argc, char* argv[])
                 prog_use(argv[0]);
                 return EXIT_SUCCESS;
             case 'o':
-                logFile = optarg;
+                strlogFile = optarg;
                 break;
             case 'p':
                 producers = atoi(optarg);
