@@ -74,7 +74,7 @@ int monitor(int producers, int consumers, int seconds) {
   }
   
   logstr = "Beginning process with the producers";
-  ofstream ofoutputFile (myLog, ios::app);
+  ofoutputFile (myLog, ios::app);
     if (ofoutputFile.is_open()) {
         ofoutputFile << getTheTime("") << "\t"
                      << " " << logstr << "\t"
@@ -205,7 +205,7 @@ int monitor(int producers, int consumers, int seconds) {
   }
     
   logstr = "The producers and consumers have been shutdown and all memory deallocated";
-  ofstream ofoutputFile (myLog, ios::app);
+  ofoutputFile (myLog, ios::app);
     if (ofoutputFile.is_open()) {
         ofoutputFile << getTheTime("") << "\t"
                      << " " << logstr << "\t"
@@ -216,7 +216,7 @@ int monitor(int producers, int consumers, int seconds) {
         perror("Failed to write to the log");
         return false;
     }
-  fclose(myLog);  
+   
   return EXIT_SUCCESS;
 }
                
