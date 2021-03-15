@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
     string myPID = getString(Pid);
     string logstr = "Consumer's PID: ";
     logstr.append(myPID);
-    logstr.append(" has started."
+    logstr.append(" has started.");
     ofstream ofoutputFile (myLog, ios::app);
     if (ofoutputFile.is_open()) {
         ofoutputFile << getTheTime("") << "\t"
@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
     // Get our entire queue
     struct itemInfo* queue  = (struct itemInfo*) (shm_addr + sizeof(int) + sizeof(head));
   
-    while(!sleepTime && !sigQuitFlag)
+    while(!sleepTime && !gSignalStatus)
     {
       sleep(sleepTime);
       sleepTime--;
