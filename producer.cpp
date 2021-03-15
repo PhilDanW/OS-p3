@@ -31,7 +31,6 @@ int main(int argc, char* argv[])
         ofoutputFile << getTheTime("") << "\t"
                      << " " << strlog << "\t"
                      << endl;
-        ofoutputFile.close();
     }
     else {
         perror("Failed to write to the log");
@@ -68,12 +67,11 @@ int main(int argc, char* argv[])
         strlog.append(myPID);
         strlog.append(" put item in queue: ");
         strlog.append(myItem);
-        ofstream ofoutputFile (myLog, ios::app);
+    
         if (ofoutputFile.is_open()) {
                     ofoutputFile << getTheTime("") << "\t"
                                  << " " << strlog << "\t"
-                                 << endl;
-                    ofoutputFile.close();
+                                 << endl;     
         }
         else {
             perror("Failed to write to the log");
@@ -85,6 +83,7 @@ int main(int argc, char* argv[])
         s.Signal();
         n.Signal();
 
+        ofoutputFile.close();
         return EXIT_SUCCESS;
     }
 }
