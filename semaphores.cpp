@@ -28,7 +28,7 @@ semaphores::semaphores(key_t key, bool Create, int Value)
                 // Write success to log file
 
                 // Set as the creator of the Sem
-                _bCreator = true;
+                _creator = true;
                 // Set as properly initialized
                 _isInitialized = true;
             }
@@ -44,7 +44,7 @@ semaphores::semaphores(key_t key, bool Create, int Value)
 
 
 //            _semid = semget(key, 1, SEM_R | SEM_A );
-            _bCreator = false;
+            _creator = false;
             if (_semid > 0)
             {
                 // Set as properly initialized
@@ -54,7 +54,7 @@ semaphores::semaphores(key_t key, bool Create, int Value)
     }
 }
 
-semaphores::~productSemaphores()
+semaphores::~semaphores()
 {
     if(_bCreator && _isInitialized)
     {
