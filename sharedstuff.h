@@ -37,12 +37,6 @@ char* shm_addr;
 //state to decide critical section processing
 enum state {waiting, wantin, inside};
 
-struct sembuf {
-    int sem_num;
-    int sem_op;
-    int sem_flag;
-};
-
 //structures used to store information used in shared memory
 struct itemPointer {
   int size;
@@ -70,7 +64,7 @@ bool WriteToLog(std::string& logString, std::string LogFile)
     {
         // Get the current local time
 //        string 
-        logFile << GetTimeFormatted("").c_str();
+        logFile << getTime("").c_str();
         logFile << " " << logString.c_str();
         logFile << std::endl;
         logFile.close();
@@ -93,6 +87,24 @@ std::string getString(const int nVal)
     std::string strFinalVal = sDep;                    
     free(sDep);
     return strFinalVal;
+}
+
+std::string getTime(const char* prePendString)
+{
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[10];
+    
+    // Get time
+    time (&rawtime);
+    timeinfo = localtime (&rawtime);
+
+    // Format time for HH:MM:SS
+    strftime (buffer,80,"%T",timeinfo);
+
+    std::string strReturn = prePendString;
+    strReturn.append(buffer);
+    return strReturn;
 }
 
 
