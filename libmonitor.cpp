@@ -1,134 +1,160 @@
 #include <iostream>
 #include <string.h>
-#include <unistd.h>
-#include <fstream>
 #include <vector>
-#include "semaphores.h"
+#include <unistd.h>
+
 #include "libmonitor.h"
-#include "sharedstuff.h"
+#include "sharedStructures.h"
+#include "productSemaphores.h"
+
+// Static process counter => Never > 20 (1 Parent + 19 Children)
+const int MAX_PROCESSES = 19;
+const int BUFFERSIZE = 8192;
+
 using namespace std;
 
-struct itemPointer* product;
-struct itemInfo* productQueue;
-
-static int processes = 19;
-static int buffer = 5120;
-
+// Important Item queues + arrays
+struct ProductHeader* productHeader;
+struct ProductItem* productItemQueue;
 vector<int> vecProducers;
 vector<int> vecConsumers;
 
-bool WriteLogFile(std::string&, std::string);
-std::string GetTimeFormatted(const char*);
-
-volatile sig_atomic_t gSignalStatus = 0;
-void signal_handler(int signal)
-{
-    gSignalStatus = 1;
+// SIGINT handling
+volatile sig_atomic_t sigIntFlag = 0;
+void sigintHandler(int sig){ // can be called asynchronously
+  sigIntFlag = 1; // set flag
 }
 
-//this is the main process to start the monitor
-//during this process producers and consumers will be created as they are needed
-int monitor(string strLogFile, int producers, int consumers, int seconds) {
-  
-  //register the signal handler
-  signal(SIGINT, signal_handler);
-  //create all variables needed
-  
-  bool isDead = false;
-  bool isComplete = false;
-  time_t elapSeconds;  
-  elapSeconds = time(NULL);
-  int consumerCount = 0;  
-    
-  const char* myLog = "monitor_log";
-    
-  cout << "some variables set" << endl;  
-  
-  string logstr = "Monitor process has begun...\n";
-  WriteLogFile(logstr, strLogFile);
-    
-  // Create the Semaphores
-  semaphores s(MUTEX, true, 1);
-  semaphores n(EMPTY, true, 0);
-  semaphores e(FULL, true, QUEUE_SIZE);
-  
-    
-  cout << "made it to memory allocation" << endl;
-  int memory = sizeof(itemPointer) + sizeof(itemInfo) * 20;
-  cout << memory << endl;
-  shm_id = shmget(SHARED, memory, IPC_CREAT | IPC_EXCL | 0660);
-  cout << shm_id << endl;
-  if (shm_id == -1) {
-        perror("monitor: Error: could not allocate a segment of shared memory");
-        exit(EXIT_FAILURE);
+
+// MonitorProcess - Process to start monitor process.  It kicks of Producers and Consumers as necessary
+int monitorProcess(string strLogFile, int nNumberOfProducers, int nMaxNumberOfConsumers, int nSecondsToTerminate)
+{
+  // Check Input and exit if a param is bad
+  if(strLogFile.size() < 1 || nNumberOfProducers < 1 || 
+    nMaxNumberOfConsumers < 1 || nSecondsToTerminate < 1)
+  {
+    errno = EINVAL;
+    perror("LibMonitor: Unknown option");
+    return EXIT_FAILURE;
   }
-  
-  //if the memory segement was properly allocated, attach the segment to the process's address
+
+  // Register SIGINT handling
+  signal(SIGINT, sigintHandler);
+  bool isKilled = false;
+  bool bComplete = false;
+
+  // Start Time for time Analysis
+  time_t secondsStart;
+  secondsStart = time(NULL);
+
+  // Start counting number of live consumers
+  // It should never be > nNumberConsumers
+  int nConsumerCount = 0;
+
+  // Start Logging
+  string strLog = "*****  Started Monitor Process  *****";
+  WriteLogFile(strLog, strLogFile);
+
+
+  // Create the necessary Semaphores with the
+  // productSemaphores class
+  productSemaphores s(KEY_MUTEX, true, 1);
+  productSemaphores n(KEY_EMPTY, true, 0);
+  productSemaphores e(KEY_FULL, true, PRODUCT_QUEUE_LENGTH);
+
+  if(!s.isInitialized() || !n.isInitialized() || !e.isInitialized())
+  {
+    perror("LibMonitor: Could not successfully create Semaphores");
+    exit(EXIT_FAILURE);
+  }
+  // Setup shared memory
+  // allocate a shared memory segment with size of 
+  // Product Header + entire Product array
+  int memSize = sizeof(ProductHeader) + sizeof(ProductItem) * PRODUCT_QUEUE_LENGTH;
+  shm_id = shmget(KEY_SHMEM, memSize, IPC_CREAT | IPC_EXCL | 0660);
+  if (shm_id == -1) {
+      perror("LibMonitor: Error allocating shared memory");
+      exit(EXIT_FAILURE);
+  }
+
+  // attach the shared memory segment to our process's address space
   shm_addr = (char*)shmat(shm_id, NULL, 0);
   if (!shm_addr) { /* operation failed. */
-        perror("monitor: Error: could not attach segment to process address");
-        exit(EXIT_FAILURE);
+      perror("LibMonitor: Error attaching shared memory");
+      exit(EXIT_FAILURE);
   }
-  
-  // Get the queue header and the queue of products
-  product = (struct itemPointer*) (shm_addr);
-  product->currentItem = 0;
-  product->nextItem = 0;
-  product->size = QUEUE_SIZE;
-  productQueue = (struct itemInfo*) (shm_addr+sizeof(int)+sizeof(product));
+  // Get the queue header
+  productHeader = (struct ProductHeader*) (shm_addr);
+  // Get our entire queue
+  productItemQueue = (struct ProductItem*) (shm_addr+sizeof(int)+sizeof(productHeader));
 
-  
-  for(int i=0; i < QUEUE_SIZE; i++)
+//  productItemQueue = (struct ProductItem*) (shm_addr+sizeof(int));
+  // Fill the product header
+  productHeader->pCurrent = 0;
+  productHeader->pNextQueueItem = 0;
+  productHeader->QueueSize = PRODUCT_QUEUE_LENGTH;
+
+  // Set all items in queue to empty
+  for(int i=0; i < PRODUCT_QUEUE_LENGTH; i++)
   {
-      productQueue[i].value = 0.0f;
-      productQueue[i].ready = false;  
+      productItemQueue[i].readyToProcess = false;
+      productItemQueue[i].itemValue = 0.0f;
   }
-  
-  logstr = "Beginning process with the producers";
-  WriteLogFile(logstr, strLogFile);
+
+  strLog = "LibMonitor: Starting Producers";
+  WriteLogFile(strLog, strLogFile);
   
   // Start up producers by fork/exec nNumberOfProducers
-  for(int i=0; i < producers; i++)
+  for(int i=0; i < nNumberOfProducers; i++)
   {
     // Fork and store pid Producer Vector
-    pid_t pid = fork(producerProg, myLog);
+    pid_t pid = forkProcess(ProducerProcess, strLogFile);
     if(pid > 0)
     {
       vecProducers.push_back(pid);
     }
   }
- 
-  cout << "monitor: Process has started with " << vecProducers.size() << " Producers" << endl << endl;
+  cout << "LibMonitor: Started " << vecProducers.size() << " Producers" << endl << endl;
 
+  // Check that we actually have some producers
   if(vecProducers.size() < 1)
   {
     errno = ECANCELED;
-    perror("monitor: Error: failed to create the necessary producers.");
-    isDead = true;
+    perror("LibMonitor: Could not create Producers");
+    isKilled = true;
   }
-    
-  pid_t waitPID;
-  int waitStatus;
   
-  cout << "outside the while loop" << endl;
-  do
+  // Keep track of waits & pids
+  pid_t waitPID;
+  int wstatus;
+
+  // This is the main loop of the operation.  It will
+  // Loop until timeout or interrupt exit
+  while(!isKilled && !sigIntFlag && !((time(NULL)-secondsStart) > nSecondsToTerminate))
   {
+    // Check for newly available products to consume
+    // with new consumers
     s.Wait();
 
-    // Check for a waiting, readyToProcess queue
-    if(productQueue[product->currentItem % QUEUE_SIZE].ready && vecConsumers.size() < (consumers+1))
+
+    // Check for a waiting, readyToProcess queue.  Also, make sure the number
+    // of Consumers is always < nNumberOfConsumers (Max Number of Consumers)
+    if(productItemQueue[productHeader->pCurrent%PRODUCT_QUEUE_LENGTH].readyToProcess &&
+      vecConsumers.size() < (nMaxNumberOfConsumers+1))
     {
       // For a new consumer
-      cout << "monitor: Assigning " << product->currentItem % QUEUE_SIZE << " to new consumer" << endl;
-      pid_t pid = fork(consumerProg, strLogFile, product->currentItem%QUEUE_SIZE);
+      cout << "LibMonitor: Assigning " << productHeader->pCurrent%PRODUCT_QUEUE_LENGTH << " to new consumer" << endl;
+      pid_t pid = forkProcess(ConsumerProcess, strLogFile, productHeader->pCurrent%PRODUCT_QUEUE_LENGTH);
       if(pid > 0)
       {
-          vecConsumers.push_back(pid);
-          // Increment Current Index and wrap it around if > queue size
-          product->currentItem = (++product->currentItem)%QUEUE_SIZE;
+        // Keep track of the new consumer in consumer vector
+        vecConsumers.push_back(pid);
+
+        // Increment Current Index and wrap it around if > queue size
+        productHeader->pCurrent = (++productHeader->pCurrent)%PRODUCT_QUEUE_LENGTH;
         
-          // Report what happened ** Move Cursor left: \033[3D
-          cout << "LibMonitor: Consumer PID " << pid << " started" << endl;
+        // Report what happened ** Move Cursor left: \033[3D
+        cout << "LibMonitor: Consumer PID " << pid << " started" << endl;
       }
     }
 
@@ -136,17 +162,17 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
     
     // Note :: We use the WNOHANG to call waitpid without blocking
     // If it returns 0, it does not have a PID waiting
-    waitPID = waitpid(-1, &waitStatus, WNOHANG | WUNTRACED | WCONTINUED);
+    waitPID = waitpid(-1, &wstatus, WNOHANG | WUNTRACED | WCONTINUED);
 
 
     // No PIDs are in-process
-    if (isDead) {
-      isComplete = true;   // We say true so that we exit out of main
+    if (isKilled) {
+      bComplete = true;   // We say true so that we exit out of main
       break;              // loop and free up all necessary data
     }
 
     // Child processed correctly
-    if (WIFEXITED(waitStatus) && waitPID > 0)
+    if (WIFEXITED(wstatus) && waitPID > 0)
     {
       // Remove the consumer from the consumer array
       for(int i=0; i < vecConsumers.size(); i++)
@@ -154,123 +180,105 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
         if(vecConsumers[i] == waitPID)
         {
           cout << endl; // Put in a hard return.  Seems to look good
-          vecConsumers.erase( vecConsumers.begin() + i);
+          vecConsumers.erase( vecConsumers.begin() + i );
           break;
         }
       }
     
-    } else if (WIFSIGNALED(waitStatus) && waitPID > 0) {
-        cout << waitPID << " killed by signal " << WTERMSIG(waitStatus) << endl;
-    } else if (WIFSTOPPED(waitStatus) && waitPID > 0) {
-        cout << waitPID << " stopped by signal " << WTERMSIG(waitStatus) << endl;
-    } else if (WIFCONTINUED(waitStatus) && waitPID > 0) {
+    } else if (WIFSIGNALED(wstatus) && waitPID > 0) {
+        cout << waitPID << " killed by signal " << WTERMSIG(wstatus) << endl;
+    } else if (WIFSTOPPED(wstatus) && waitPID > 0) {
+        cout << waitPID << " stopped by signal " << WTERMSIG(wstatus) << endl;
+    } else if (WIFCONTINUED(wstatus) && waitPID > 0) {
         continue;
     }
 
-  } 
-  while(!isDead && !gSignalStatus && !((time(NULL)-elapSeconds) > seconds));
-    
-  // Shutdown all of the producers
-  cout << "Time to shut down the producers" << endl;
+  }
+
+  // Signal to the producers to shutdown
+  cout << "LibMonitor: Shutting down producers" << endl;
   for(int i=0; i < vecProducers.size(); i++)
   {
     kill(vecProducers[i], SIGQUIT); 
-    cout << vecProducers[i] << "has been signaled to shutdown" << endl;
+    cout << "LibMonitor: Producer PID " << vecProducers[i] << " signaled shutdown" << endl;
   }
 
-  // Shutdown all of the consumers
-  cout << "Time to shut down the consumers" << endl;
+  cout << "LibMonitor: Shutting down consumers" << endl;
   for(int i=0; i < vecConsumers.size(); i++)
   {
     kill(vecConsumers[i], SIGQUIT); 
-    cout << vecConsumers[i] << "has been signaled to shutdown" << endl;
+    cout << "LibMonitor: Consumer PID " << vecConsumers[i] << " signaled shutdown" << endl;
   }
-    
-  // After all producers and consumers are shutdown, detatch and deallocate the shared memory
-  cout << "Time to deallocate the shared memory" << endl;
+
+  // Check for timeout
+  if(sigIntFlag)
+  {
+    string strLog = "LibMonitor: Ctrl-C shutdown successful";
+    WriteLogFile(strLog, strLogFile);
+    cout << strLog << endl;
+  }
+  else
+  {
+    string strLog = "LibMonitor: Timeout shutdown successful";
+    WriteLogFile(strLog, strLogFile);
+    cout << strLog << endl;
+  }
+
+  // Breakdown shared memory
+  // Dedetach shared memory segment from process's address space
+  cout << endl;
+  cout << "LibMonitor: De-allocating shared memory" << endl;
   if (shmdt(shm_addr) == -1) {
-      perror("monitor: Error: could not detach the shared memory");
+      perror("LibMonitor: Error detaching shared memory");
   }
-  else if (shmctl(shm_id, IPC_RMID, NULL) == -1) {
-      perror("monitor: Error: could not deallocate the shared memory ");
+
+  // De-allocate the shared memory segment.
+  if (shmctl(shm_id, IPC_RMID, NULL) == -1) {
+      perror("LibMonitor: Error deallocating shared memory ");
   }
-  else {
-      cout << "monitor: Shared memory De-allocated" << endl << endl;
-  }
-    
-  logstr = "The producers and consumers have been shutdown and all memory deallocated";
-  WriteLogFile(logstr, strLogFile);
-   
+
+  cout << "LibMonitor: Shared memory De-allocated" << endl << endl;
+
+  if(isKilled)
+    return EXIT_FAILURE;
+
+
+  strLog = "LibMonitor: : Producers + Consumers terminated, de-alocated shared memory and semaphore";
+  WriteLogFile(strLog, strLogFile);
+
+
+  // Success!
   return EXIT_SUCCESS;
 }
-               
-int fork(string process, string myLog, int arrayItem)
+
+
+int forkProcess(string strProcess, string strLogFile, int nArrayItem)
 {
         pid_t pid = fork();
-        //if no child is forked, then exit
+        // No child made - exit with failure
         if(pid < 0)
         {
-            perror("monitor: Error: failed to fork process");
+            // Signal to any child process to exit
+
+            perror("LibMonitor: Could not fork process");
             return EXIT_FAILURE;
         }
-        //if a child if forked, use exec to give it a job to do
+        // Child process here - Assign out it's work
         if(pid == 0)
         {
-            if(arrayItem < 0) {
-              execl(process.c_str(), process.c_str(), myLog.c_str(), (char*)0);
-            }
-            else {
+            // Execute child process without array arguements
+            if(nArrayItem < 0)
+              execl(strProcess.c_str(), strProcess.c_str(), strLogFile.c_str(), (char*)0);
+            else
+            {
               // Convert int to a c_str to send to exec
-              string arrItem = getString(arrayItem);
-              execl(process.c_str(), process.c_str(), arrItem.c_str(), myLog.c_str(), (char*)0);
+              string strArrayItem = GetStringFromInt(nArrayItem);
+              execl(strProcess.c_str(), strProcess.c_str(), strArrayItem.c_str(), strLogFile.c_str(), (char*)0);
             }
 
-            fflush(stdout);
-            exit(EXIT_SUCCESS);
+            fflush(stdout); // Mostly for debugging -> tty wasn't flushing
+            exit(EXIT_SUCCESS);    // Exit from forked process successfully
         }
         else
-            //return the given PID
-            return pid; 
+            return pid; // Returns the Parent PID
 }
-
-bool WriteLogFile(std::string& logString, std::string LogFile)
-{
-    // Open a file to write
-    std::ofstream logFile (LogFile.c_str(), std::ofstream::out | std::ofstream::app);
-    if (logFile.is_open())
-    {
-        // Get the current local time
-//        string 
-        logFile << GetTimeFormatted("").c_str();
-        logFile << " " << logString.c_str();
-        logFile << std::endl;
-        logFile.close();
-        return true;
-    }
-    else
-    {
-        perror("Unable to write to log file");
-        return false;
-    }
-}
-
-std::string GetTimeFormatted(const char* prePendString)
-{
-    time_t rawtime;
-    struct tm * timeinfo;
-    char buffer[10];
-    
-    // Get time
-    time (&rawtime);
-    timeinfo = localtime (&rawtime);
-
-    // Format time for HH:MM:SS
-    strftime (buffer,80,"%T",timeinfo);
-
-    std::string strReturn = prePendString;
-    strReturn.append(buffer);
-    return strReturn;
-}
-     
-               
-
