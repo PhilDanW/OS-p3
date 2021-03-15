@@ -59,6 +59,8 @@ int monitor(int producers, int consumers, int seconds) {
   semaphores n(EMPTY, true, 0);
   semaphores e(FULL, true, QUEUE_SIZE);
   
+    
+  cout << "made it to memory allocation" << endl;
   allocateMemory();
   
   // Get the queue header and the queue of products
