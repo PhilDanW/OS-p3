@@ -42,9 +42,9 @@ int monitor(int producers, int consumers, int seconds) {
   logstr = "Monitor process has begun...\n";
   ofstream ofoutputFile (myLog, ios::app);
     if (ofoutputFile.is_open()) {
-        ofoutputFile << getTheTime("");
-                     << " " << logstr;
-                     << std::endl;
+        ofoutputFile << getTheTime("") << "\t"
+                     << " " << logstr << "\t"
+                     << endl;
         ofoutputFile.close();
     }
     else {
@@ -74,11 +74,11 @@ int monitor(int producers, int consumers, int seconds) {
   }
   
   logstr = "Beginning process with the producers";
-  ofoutputFile (myLog, ios::app);
+  ofstream ofoutputFile (myLog, ios::app);
     if (ofoutputFile.is_open()) {
-        ofoutputFile << getTheTime("");
-                     << " " << logstr;
-                     << std::endl;
+        ofoutputFile << getTheTime("") << "\t"
+                     << " " << logstr << "\t"
+                     << endl;
         ofoutputFile.close();
     }
     else {
@@ -205,11 +205,11 @@ int monitor(int producers, int consumers, int seconds) {
   }
     
   logstr = "The producers and consumers have been shutdown and all memory deallocated";
-  ofoutputFile (myLog, ios::app);
+  ofstream ofoutputFile (myLog, ios::app);
     if (ofoutputFile.is_open()) {
-        ofoutputFile << getTheTime("").c_str();
-                     << " " << logstr.c_str();
-                     << std::endl;
+        ofoutputFile << getTheTime("") << "\t"
+                     << " " << logstr << "\t"
+                     << endl;
         ofoutputFile.close();
     }
     else {
