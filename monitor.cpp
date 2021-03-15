@@ -27,9 +27,10 @@ void signal_handler(int signal)
 //during this process producers and consumers will be created as they are needed
 int monitor(string LogFile, int producers, int consumers, int seconds) {
   //register the signal handler
-  signal(SIGINT, signal_handler);
-  //start the timer;
-  const char* myLog = LogFile; 
+  signal(SIGINT, signal_handler)
+  //create all variables needed
+  std::LogFile
+  const char* myLog = LogFile.c_str(); 
   int consumerCount = 0;
   time_t elapSeconds = NULL;
   string logstr = NULL;
