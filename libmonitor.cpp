@@ -121,10 +121,10 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
     s.Wait();
     // Check for a waiting, readyToProcess queue
     
-     if(consArraySize < consumers) {
+     
       // For a new consumer
       cout << "monitor: Assigning " << product->currentItem % 20 << " to consumer" << endl;
-      pid_t pid = fork(consumerProg, myLog, product->currentItem % QUEUE_SIZE);
+      pid_t pid = fork(consumerProg, myLog, product->currentItem % 20);
       
       
         if(pid > 0) 
@@ -135,12 +135,12 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
               consumerArray[i] = pid;
 
               // Increment Current Index and wrap it around if > queue size
-              product->currentItem = (++product->currentItem) % QUEUE_SIZE;
+              product->currentItem = (++product->currentItem) % 20;
            }
            // Report what happened ** Move Cursor left: \033[3D
            cout << "monitor: the consumer pid " << pid << " started" << endl;
          }
-     }
+     
       
     s.Signal();  
     // waitpid() suspends execution of the current process until a child specified by pid argument has changed state  
