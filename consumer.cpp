@@ -1,7 +1,7 @@
 #include <iostream>
 #include <unistd.h>
-#include "sharedstuff.h"
-#include "semaphores.h"
+#include "sharedStructures.h"
+#include "productSemaphores.h"
 #include <fstream>
 
 // Forward Declarations
