@@ -1,117 +1,150 @@
 #include <iostream>
 #include <unistd.h>
-#include "sharedstuff.h"
-#include "semaphores.h"
 #include <fstream>
-using namespace std;
+#include "sharedStructures.h"
+#include "productSemaphores.h"
 
-static void allocateMemory();
-volatile sig_atomic_t gSignalStatus = 0;
-void signal_handler(int signal)
-{
-    gSignalStatus = 1;
+// Forward Declarations
+static void show_usage(std::string);
+
+// SIGQUIT handling
+volatile sig_atomic_t sigQuitFlag = 0;
+void sigQuitHandler(int sig){ // can be called asynchronously
+  sigQuitFlag = 1; // set flag
 }
+
+using namespace std;
 
 int main(int argc, char* argv[])
 {
-    signal(SIGINT, signal_handler);
-    
-    
-    string myLog = argv[1];
-    srand(time(NULL));
-    int sleepTime = rand() % 10 + 1;
-    
-    int child = getpid();
-    string myPid = getString(child);
-    string strlog = "Producer's PID: ";
-    strlog.append(myPid);
-    strlog.append(" has started.");
-    ofstream ofoutputFile (myLog, ios::app);
-    if (ofoutputFile.is_open()) {
-        ofoutputFile << getTheTime("") << "\t"
-                     << " " << strlog << "\t"
-                     << endl;
+  // Fast Seed Random for better performance
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+
+  // Using nano-seconds instead of seconds
+  srand((time_t)ts.tv_nsec);
+
+  // Register SIGQUIT handling
+  signal(SIGINT, sigQuitHandler);
+
+  int childPid = getpid(); // ProducerID to log
+  
+  // Check the correct number of arguments
+  if(argc < 2)
+  {
+    perror("Producer: Incorrect argument found");
+    exit(EXIT_FAILURE);
+  }
+  // And the log file string
+  string strLogFile = argv[1];
+
+
+  // Log startup of the child
+  string strLog = "Producer: PID ";
+  strLog.append(GetStringFromInt(childPid));
+  strLog.append(" started");
+  WriteLogFile(strLog, strLogFile);
+  cout << strLog << endl;
+
+  // Find the necessary Semaphores
+  productSemaphores s(KEY_MUTEX, false);
+  productSemaphores n(KEY_EMPTY, false);
+  productSemaphores e(KEY_FULL, false);
+
+  if(!s.isInitialized() || !n.isInitialized() || !e.isInitialized())
+  {
+    perror("Producer: Could not successfully find Semaphores");
+    exit(EXIT_FAILURE);
+  }
+
+  // Open the connection to shared memory
+    // Allocate the shared memory
+    // And get ready for read/write
+    // Get a reference to the shared memory, if available
+    shm_id = shmget(KEY_SHMEM, 0, 0);
+    if (shm_id == -1) {
+        perror("Producer: Could not successfully find Shared Memory");
+        exit(EXIT_FAILURE);
     }
-    else {
-        perror("Failed to write to the log");
+
+    // Read the memory size and calculate the array size
+    struct shmid_ds shmid_ds;
+    shmctl(shm_id, IPC_STAT, &shmid_ds);
+    size_t realSize = shmid_ds.shm_segsz;
+//    int length = (int) shmid_ds.shm_segsz / sizeof(AddItem);
+
+    // Now we have the size - actually setup with shmget
+    shm_id = shmget(KEY_SHMEM, realSize, 0);
+    if (shm_id == -1) {
+        perror("Producer: Could not successfully find Shared Memory");
+        exit(EXIT_FAILURE);
     }
-  
-    semaphores s(MUTEX, false);
-    semaphores n(EMPTY, false);
-    semaphores e(FULL, false);
-  
-    allocateMemory();
-  
+
+    // attach the shared memory segment to our process's address space
+    shm_addr = (char*)shmat(shm_id, NULL, 0);
+    if (!shm_addr) { /* operation failed. */
+        perror("Producer: Could not successfully attach Shared Memory");
+        exit(EXIT_FAILURE);
+    }
+
     // Get the queue header
-    struct itemPointer* head = (struct itemPointer*) (shm_addr);
-    // Get our entire queue
-    struct itemInfo* queue  = (struct itemInfo*) (shm_addr + sizeof(int) + sizeof(head));
-  
-    while(!gSignalStatus)
-    {
-        int sleepTime = rand() % 5 + 1;
-        sleep(sleepTime);
+    struct ProductHeader* productHeader = 
+        (struct ProductHeader*) (shm_addr);
+    // Get our queue right after the header
+    struct ProductItem*productItemQueue = 
+        (struct ProductItem*) (shm_addr+sizeof(int)+sizeof(productHeader));
 
-        e.Wait();
-        s.Wait();
-      
-        int myValue = ((1 + 2) * (3 + 4) * (5 + 6));
-      
-        queue[head->nextItem].value = myValue;
-        queue[head->nextItem].ready = true;
+  // Loop until signaled to shutdown via SIGINT
+  while(!sigQuitFlag)
+  {
+    // Get a random time to sleep between 1-5 seconds
+    int nSleepTime = rand()%5+1;
 
-        // Log what happened into System Log
-        string myPID = getString(child); 
-        string myItem = getString(head->nextItem);
-        strlog = "Producer's PID: ";
-        strlog.append(myPID);
-        strlog.append(" put item in queue: ");
-        strlog.append(myItem);
-    
-        if (ofoutputFile.is_open()) {
-                    ofoutputFile << getTheTime("") << "\t"
-                                 << " " << strlog << "\t"
-                                 << endl;     
-        }
-        else {
-            perror("Failed to write to the log");
-        }
-    
-      
-        head->nextItem =(++head->nextItem) % head->size;
+    // Sleep for my random time
+    sleep(nSleepTime);
 
-        s.Signal();
-        n.Signal();
+    // The productHeader->pNextQueueItem => Next one to put new product in
+    // the productHeader->pCurrent => Next one to consume
 
-        ofoutputFile.close();
-        return EXIT_SUCCESS;
-    }
-}
+    // Produce an item by putting a number on the queue
+    // As a little easter egg, since this is due pretty
+    // close to PI day, I'm going to (loosly) calcuate
+    // pi and return it as my product
+    float fEasterEgg = 355.0f/113.0f;
 
-void allocateMemory() {
-  
-  shm_id = shmget(SHARED, 0, 0);
-  if (shm_id == -1) {
-      perror("consumer: Error: failed to find shm_id ");
-      exit(EXIT_FAILURE);
+    // Get Exclusive Access via Semaphores
+    e.Wait();
+    s.Wait();
+
+    // Push this onto the Queue
+    productItemQueue[productHeader->pNextQueueItem].itemValue = fEasterEgg;
+
+    // Mark as ready to be process
+    productItemQueue[productHeader->pNextQueueItem].readyToProcess = true;
+
+    // Log what happened into System Log
+    string strLog = "Producer: PID ";
+    strLog.append(GetStringFromInt(childPid));
+    strLog.append(" added item to queue: ");
+    strLog.append(GetStringFromInt(productHeader->pNextQueueItem));
+    WriteLogFile(strLog, strLogFile);
+    // And to the screen
+    cout << strLog << endl;
+
+    // Add an item to the next queue and wrap it around if it's > queue size
+    productHeader->pNextQueueItem = (++productHeader->pNextQueueItem)%productHeader->QueueSize;
+
+  // Debug print queue
+  //cout << "p-pCurrent:" << productHeader->pCurrent << endl;
+  //cout << "p-pNextQueue:" << productHeader->pNextQueueItem << endl;
+  //cout << "p-QueueSize:" << productHeader->QueueSize << endl;
+  //  for(int i=0;i<productHeader->QueueSize;i++ )
+  //    cout << productItemQueue[i].itemValue << " ";
+  //  cout << endl;
+
+    s.Signal();
+    n.Signal();
   }
 
-  // Get the size of the memory
-  struct shmid_ds shmid_ds;
-  shmctl(shm_id, IPC_STAT, &shmid_ds);
-  size_t realSize = shmid_ds.shm_segsz;
-
-  // use shmget to setup with the size of the memory
-  shm_id = shmget(SHARED, realSize, 0);
-  if (shm_id == -1) {
-      perror("consumer: Error: failed to setup memory with shmget");
-      exit(EXIT_FAILURE);
-  }
-
-  // attach the shared memory segment to our process's address space
-  shm_addr = (char*)shmat(shm_id, NULL, 0);
-  if (!shm_addr) { /* operation failed. */
-      perror("consumer: Error: failed to attach the shared memeory");
-      exit(EXIT_FAILURE);
-  }
+    return 0;
 }
