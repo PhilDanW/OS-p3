@@ -29,13 +29,12 @@ int main(int argc, char* argv[])
     ofstream ofoutputFile (myLog, ios::app);
     if (ofoutputFile.is_open()) {
         ofoutputFile << getTheTime("") << "\t"
-                     << " " << logstr << "\t"
+                     << " " << strlog << "\t"
                      << endl;
         ofoutputFile.close();
     }
     else {
         perror("Failed to write to the log");
-        return false;
     }
   
     semaphores s(MUTEX, false);
@@ -72,13 +71,12 @@ int main(int argc, char* argv[])
         ofstream ofoutputFile (myLog, ios::app);
         if (ofoutputFile.is_open()) {
                     ofoutputFile << getTheTime("") << "\t"
-                                 << " " << logstr << "\t"
+                                 << " " << strlog << "\t"
                                  << endl;
                     ofoutputFile.close();
         }
         else {
             perror("Failed to write to the log");
-            return false;
         }
     
       
