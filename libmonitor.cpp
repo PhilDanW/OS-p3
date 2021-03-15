@@ -37,17 +37,20 @@ int monitor(int producers, int consumers, int seconds) {
   //register the signal handler
   signal(SIGINT, signal_handler);
   //create all variables needed
-  const char* myLog = "monitor_log";
-  int consumerCount = 0;
-  time_t elapSeconds = NULL;
-  string logstr = NULL;
-    
-  cout << "some variables set" << endl;  
+  
   bool isDead = false;
   bool isComplete = false;
+  time_t elapSeconds;  
+  elapSeconds = time(NULL);
+  int consumerCount = 0;  
+    
+  const char* myLog = "monitor_log";
+    
+  cout << "some variables set" << endl;  
+  
   pid_t waitPID;
   int waitStatus;  
-  elapSeconds = time(NULL);
+  
   
   logstr = "Monitor process has begun...\n";
   cout << logstr << endl;
