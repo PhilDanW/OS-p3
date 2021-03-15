@@ -41,9 +41,9 @@ int monitor(int producers, int consumers, int seconds) {
   
   logstr = "Monitor process has begun...\n";
   ofstream ofoutputFile (myLog, ios::app);
-    if (myLog.is_open()) {
-        ofoutputFile << getTheTime("").c_str();
-                     << " " << logstr.c_str();
+    if (ofoutputFile.is_open()) {
+        ofoutputFile << getTheTime("");
+                     << " " << logstr;
                      << std::endl;
         ofoutputFile.close();
     }
@@ -74,10 +74,10 @@ int monitor(int producers, int consumers, int seconds) {
   }
   
   logstr = "Beginning process with the producers";
-  ofstream ofoutputFile (myLog, ios::app);
-    if (myLog.is_open()) {
-        ofoutputFile << getTheTime("").c_str();
-                     << " " << logstr.c_str();
+  ofoutputFile (myLog, ios::app);
+    if (ofoutputFile.is_open()) {
+        ofoutputFile << getTheTime("");
+                     << " " << logstr;
                      << std::endl;
         ofoutputFile.close();
     }
@@ -205,8 +205,8 @@ int monitor(int producers, int consumers, int seconds) {
   }
     
   logstr = "The producers and consumers have been shutdown and all memory deallocated";
-  ofstream ofoutputFile (myLog, ios::app);
-    if (myLog.is_open()) {
+  ofoutputFile (myLog, ios::app);
+    if (ofoutputFile.is_open()) {
         ofoutputFile << getTheTime("").c_str();
                      << " " << logstr.c_str();
                      << std::endl;
@@ -216,7 +216,7 @@ int monitor(int producers, int consumers, int seconds) {
         perror("Failed to write to the log");
         return false;
     }
-    
+  fclose(myLog);  
   return EXIT_SUCCESS;
 }
                
