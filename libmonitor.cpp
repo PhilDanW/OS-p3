@@ -19,6 +19,8 @@ struct ProductItem* productItemQueue;
 vector<int> vecProducers;
 vector<int> vecConsumers;
 
+int forkProcess(string, string , int);
+
 // SIGINT handling
 volatile sig_atomic_t sigIntFlag = 0;
 void sigintHandler(int sig){ // can be called asynchronously
