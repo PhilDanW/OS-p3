@@ -1,5 +1,5 @@
-#ifndef SHAREDSTUFF
-#define SHAREDSTUFF
+#ifndef SHAREDSTRUCTURES_H
+#define SHAREDSTRUCTURES_H
 
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -16,46 +16,51 @@
 #include <iostream>
 #include <fstream>
 
-//constants
-//shared memory keys
-const key_t SHARED = 0;
-const key_t MUTEX = 0x54321;
-const key_t EMPTY = 0x54322;
-const key_t FULL = 0x54323;
-const int QUEUE_SIZE = 20; //size of the queue
-const int MAX_PROCESS = 19;
-const int BUFFER = 8192;
-const char* producerProg = "./produce";
-const char* consumerProg = "./consume";
-const char* writeLog = "./Monitor.log";
+// Arguement processing
 extern int opterr;
 
-// this variable is used to hold the returned segment identifier
-int shm_id;
-//used to specify where the page is attached
+// Critical Section Processing
+enum state { idle, want_in, in_cs };
+
+// Shared Memory structures
+struct ProductHeader {
+    int pNextQueueItem; // Pointer to next item for Producer
+    int pCurrent;       // Pointer to next item for Consumer
+    int QueueSize;   // Size of the queue
+};
+struct ProductItem {
+    bool readyToProcess;    // Ready to Process
+    float itemValue;        // The actual "Product" being returned 
+                            // from the Producer - A little Easter Egg
+};
+
+const key_t KEY_SHMEM = 0x54321;  // Shared key
+int shm_id; // Shared Mem ident
 char* shm_addr;
-//state to decide critical section processing
-enum state {waiting, wantin, inside};
 
-//structures used to store information used in shared memory
-struct itemPointer {
-  int size;
-  int nextItem;
-  int currentItem;
-};
-
-struct itemInfo {
-  int value;
-  bool ready;
-};
+// Product Semaphores
+const key_t KEY_MUTEX = 0x54321;
+const key_t KEY_EMPTY = 0x54322;
+const key_t KEY_FULL = 0x54323;
 
 struct shmseg {
-  int write;
-  int read;
-  int center;
+   int cntr;
+   int write_complete;
+   int read_complete;
 };
 
-std::string getTheTime(const char* prePendString) {
+// The size of our product queue
+const int PRODUCT_QUEUE_LENGTH = 20;
+
+const char* ProducerProcess = "./producer";
+const char* ConsumerProcess = "./consumer";
+
+/***************************************************
+ * Helper Functions
+ * *************************************************/
+// For time formatting used throughout both programs
+std::string GetTimeFormatted(const char* prePendString)
+{
     time_t rawtime;
     struct tm * timeinfo;
     char buffer[10];
@@ -72,9 +77,31 @@ std::string getTheTime(const char* prePendString) {
     return strReturn;
 }
 
-//since there is no easy way to get a string from a int in C++
-//this function converts an int value into a string
-std::string getString(const int nVal) {
+// Log file writing helper function
+bool WriteLogFile(std::string& logString, std::string LogFile)
+{
+    // Open a file to write
+    std::ofstream logFile (LogFile.c_str(), std::ofstream::out | std::ofstream::app);
+    if (logFile.is_open())
+    {
+        // Get the current local time
+//        string 
+        logFile << GetTimeFormatted("").c_str();
+        logFile << " " << logString.c_str();
+        logFile << std::endl;
+        logFile.close();
+        return true;
+    }
+    else
+    {
+        perror("Unable to write to log file");
+        return false;
+    }
+}
+
+// Returns a string from an int
+std::string GetStringFromInt(const int nVal)
+{
     int length = snprintf( NULL, 0, "%d", nVal);
     char* sDep = (char*)malloc( length + 1 );
     snprintf( sDep, length + 1, "%d", nVal);
@@ -83,4 +110,4 @@ std::string getString(const int nVal) {
     return strFinalVal;
 }
 
-#endif
+#endif // SHAREDSTRUCTURES_H
