@@ -74,7 +74,7 @@ void allocateMemory() {
   
   shm_id = shmget(SHARED, 0, 0);
   if (shm_id == -1) {
-      perror("consumer: Error: failed to find shm_id " << shm_id << endl);
+      perror("consumer: Error: failed to find shm_id ");
       exit(EXIT_FAILURE);
   }
 
