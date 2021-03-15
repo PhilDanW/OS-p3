@@ -120,7 +120,7 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
     s.Wait();
 
     // Check for a waiting, readyToProcess queue
-    if(productQueue[product->currentItem % QUEUE_SIZE]. &&
+    if(productQueue[product->currentItem % QUEUE_SIZE] &&
       consArraySize < (consumers+1))
     {
       // For a new consumer
@@ -129,11 +129,11 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
       if(pid > 0)
       {
           for(int i = 0; i < consArraySize; i++) {
-              consumerArray[i] = pid
+              consumerArray[i] = pid;
           }
 
           // Increment Current Index and wrap it around if > queue size
-          productHeader->pCurrent = (++productHeader->pCurrent)%PRODUCT_QUEUE_LENGTH;
+          product->currentItem = (++productr->currentItem)%QUEUE_SIZE;
         
           // Report what happened ** Move Cursor left: \033[3D
           cout << "LibMonitor: Consumer PID " << pid << " started" << endl;
@@ -154,7 +154,7 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
     }
 
     // Child processed correctly
-    if (WIFEXITED(wstatus) && waitPID > 0)
+    if (WIFEXITED(waitStatus) && waitPID > 0)
     {
       // Remove the consumer from the consumer array
       for(int i=0; i < consArraySize; i++)
@@ -167,9 +167,9 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
         }
       }
     
-    } else if (WIFSIGNALED(wstatus) && waitPID > 0) {
+    } else if (WIFSIGNALED(waitStatus) && waitPID > 0) {
         cout << waitPID << " killed by signal " << WTERMSIG(waitStatus) << endl;
-    } else if (WIFSTOPPED(wstatus) && waitPID > 0) {
+    } else if (WIFSTOPPED(waitStatus) && waitPID > 0) {
         cout << waitPID << " stopped by signal " << WTERMSIG(waitStatus) << endl;
     } else if (WIFCONTINUED(waitStatus) && waitPID > 0) {
         continue;
