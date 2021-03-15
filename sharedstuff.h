@@ -55,6 +55,26 @@ struct shmseg {
   int center;
 };
 
+
+
+std::string getTheTime(const char* prePendString)
+{
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[10];
+    
+    // Get time
+    time (&rawtime);
+    timeinfo = localtime (&rawtime);
+
+    // Format time for HH:MM:SS
+    strftime (buffer,80,"%T",timeinfo);
+
+    std::string strReturn = prePendString;
+    strReturn.append(buffer);
+    return strReturn;
+}
+
 //function used to write to the log file
 bool WriteToLog(std::string& logString, std::string LogFile)
 {
@@ -75,24 +95,6 @@ bool WriteToLog(std::string& logString, std::string LogFile)
         perror("Failed to write to the log");
         return false;
     }
-}
-
-std::string getTheTime(const char* prePendString)
-{
-    time_t rawtime;
-    struct tm * timeinfo;
-    char buffer[10];
-    
-    // Get time
-    time (&rawtime);
-    timeinfo = localtime (&rawtime);
-
-    // Format time for HH:MM:SS
-    strftime (buffer,80,"%T",timeinfo);
-
-    std::string strReturn = prePendString;
-    strReturn.append(buffer);
-    return strReturn;
 }
 
 //since there is no easy way to get a string from a int in C++
