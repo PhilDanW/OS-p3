@@ -16,6 +16,8 @@ static int buffer = 5120;
 int producerArray[100] = {0};
 int consumerArray[100] = {0};
 
+bool WriteLogFile(std::string&, std::string);
+
 volatile sig_atomic_t gSignalStatus = 0;
 void signal_handler(int signal)
 {
@@ -24,16 +26,9 @@ void signal_handler(int signal)
 
 //this is the main process to start the monitor
 //during this process producers and consumers will be created as they are needed
-int monitor(int producers, int consumers, int seconds) {
+int monitor(string strLogFile, int producers, int consumers, int seconds) {
   
   cout << "made it to the monitor process" << endl;
-  if(producers < 1 || consumers < 1 || seconds < 1)
-  {
-    errno = EINVAL;
-    perror("LibMonitor: Unknown option");
-    return EXIT_FAILURE;
-  }
-    
   //register the signal handler
   signal(SIGINT, signal_handler);
   //create all variables needed
@@ -53,18 +48,7 @@ int monitor(int producers, int consumers, int seconds) {
   
   
   string logstr = "Monitor process has begun...\n";
-  cout << logstr << endl;
-  ofstream ofoutputFile (myLog, ios::app);
-    if (ofoutputFile.is_open()) {
-        ofoutputFile << getTheTime("") << "\t"
-                     << " " << logstr << "\t"
-                     << endl;
-        ofoutputFile.close();
-    }
-    else {
-        perror("Failed to write to the log");
-        return false;
-    }
+  WriteLogFile(logstr, strLogFile);
     
   // Create the Semaphores
   semaphores s(MUTEX, true, 1);
@@ -90,16 +74,7 @@ int monitor(int producers, int consumers, int seconds) {
   }
   
   logstr = "Beginning process with the producers";
-    if (ofoutputFile.is_open()) {
-        ofoutputFile << getTheTime("") << "\t"
-                     << " " << logstr << "\t"
-                     << endl;
-        ofoutputFile.close();
-    }
-    else {
-        perror("Failed to write to the log");
-        return false;
-    }
+  WriteLogFile(logstr, strLogFile);
   
   // Start up producers by fork/exec nNumberOfProducers
   for(int i=0; i < producers; i++)
@@ -220,16 +195,7 @@ int monitor(int producers, int consumers, int seconds) {
   }
     
   logstr = "The producers and consumers have been shutdown and all memory deallocated";
-    if (ofoutputFile.is_open()) {
-        ofoutputFile << getTheTime("") << "\t"
-                     << " " << logstr << "\t"
-                     << endl;
-        ofoutputFile.close();
-    }
-    else {
-        perror("Failed to write to the log");
-        return false;
-    }
+  WriteLogFile(logstr, strLogFile);
    
   return EXIT_SUCCESS;
 }
@@ -261,6 +227,27 @@ int fork(string process, string myLog, int arrayItem)
         else
             //return the given PID
             return pid; 
+}
+
+bool WriteLogFile(std::string& logString, std::string LogFile)
+{
+    // Open a file to write
+    std::ofstream logFile (LogFile.c_str(), std::ofstream::out | std::ofstream::app);
+    if (logFile.is_open())
+    {
+        // Get the current local time
+//        string 
+        logFile << GetTimeFormatted("").c_str();
+        logFile << " " << logString.c_str();
+        logFile << std::endl;
+        logFile.close();
+        return true;
+    }
+    else
+    {
+        perror("Unable to write to log file");
+        return false;
+    }
 }
                
 //setup shared memory and allocate a segment with length of the queue * (size of product + size of product queue)
