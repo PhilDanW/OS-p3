@@ -13,7 +13,6 @@ struct itemInfo* productQueue;
 static int processes = 19;
 static int buffer = 5120;
 
-
 int producerArray[100] = {0};
 int consumerArray[100] = {0};
 
@@ -35,6 +34,8 @@ int monitor(int producers, int consumers, int seconds) {
   int consumerCount = 0;
   time_t elapSeconds = NULL;
   string logstr = NULL;
+    
+  cout << "some variables set" << endl;  
   bool isDead = false;
   bool isComplete = false;
   pid_t waitPID;
