@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
     string logstr = "Consumer's PID: ";
     logstr.append(myPID);
     logstr.append(" has started."
-    WriteToLog(logstr, myLog);
+    WriteFile(logstr, myLog);
   
     semaphores mutex(MUTEX, false);
     semaphores null(EMPTY, false);
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
     logstr.append(myPID);
     logstr.append(" consumed the item: ");
     logstr.append(myItem);
-    WriteToLog(logstr, myLog);
+    WriteFile(logstr, myLog);
 
     cout << "Consumer: " << Pid << " consumed the item: " << item << endl;
 
