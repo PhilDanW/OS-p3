@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
     string strlog = "Producer's PID: ";
     strlog.append(myPid);
     strlog.append(" has started.");
-    WriteFile(log, myLog);
+    WriteLogFile(log, myLog);
   
     semaphores s(MUTEX, false);
     semaphores n(EMPTY, false);
@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
         strlog.append(myPID);
         strlog.append(" put item in queue: ");
         strlog.append(myItem);
-        WriteFile(strlog, myLog);
+        WriteLogFile(strlog, myLog);
       
         head->nextItem =(++head->nextItem) % head->size;
 
