@@ -1,5 +1,3 @@
-CC := g++
-CFLAGS := -Wall -g
 target1 := monitor
 source1 := $(shell find . -name "monitor*.cpp") ./semaphores.cpp
 
@@ -9,7 +7,7 @@ objFiles1  := $(patsubst %.cpp, %.o, $(source1))
 all: $(target1)
 
 $(target1): $(objFiles1) $(LDLIBS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(target1) $(objFiles1) $(LDLIBS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(target1) $(objFiles1) $(LDLIBS)
 
 $(LDLIBS): monitor.o
 	ar $(ARFLAGS) $@ $^
@@ -21,7 +19,7 @@ objFiles2  := $(patsubst %.cpp, %.o, $(source2))
 all: $(target2)
 
 $(target2): $(objFiles2)
-	$(CC) $(CXXFLAGS) $(LDFLAGS) -o $(appname2) $(objects2) $(LDLIBS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(appname2) $(objects2) $(LDLIBS)
 
 # App 3 - builds the consumer program
 target3 := consumer
@@ -31,7 +29,7 @@ objFiles3  := $(patsubst %.cpp, %.o, $(srcfiles))
 all: $(target3)
 
 $(target3): $(objFiles3)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(target3) $(objFiles3) $(LDLIBS)
+	$(CXX) $(CXXLAGS) $(LDFLAGS) -o $(target3) $(objFiles3) $(LDLIBS)
 
 clean:
 	rm -f $(objects1)
