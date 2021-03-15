@@ -1,5 +1,5 @@
 target1 := monitor
-source1 := $(shell find . -name "monitor*.cpp") ./semaphores.cpp
+source1 := $(shell find . -name "monitor*.cpp") ./productSemaphores.cpp
 
 LDLIBS := libmonitor.a
 objFiles1  := $(patsubst %.cpp, %.o, $(source1))
@@ -13,7 +13,7 @@ $(LDLIBS): libmonitor.o
 	ar $(ARFLAGS) $@ $^
 
 target2 := producer
-source2 := $(shell find . -name "producer*.cpp") ./semaphores.cpp
+source2 := $(shell find . -name "producer*.cpp") ./productSemaphores.cpp
 objFiles2  := $(patsubst %.cpp, %.o, $(source2))
 
 all: $(target2)
@@ -23,7 +23,7 @@ $(target2): $(objFiles2)
 
 # App 3 - builds the consumer program
 target3 := consumer
-source3 := $(shell find . -name "consumer*.cpp") ./semaphores.cpp
+source3 := $(shell find . -name "consumer*.cpp") ./productSemaphores.cpp
 objFiles3  := $(patsubst %.cpp, %.o, $(source3))
 
 all: $(target3)
