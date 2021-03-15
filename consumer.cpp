@@ -32,7 +32,6 @@ int main(int argc, char* argv[])
         ofoutputFile << getTheTime("") << "\t"
                      << " " << logstr << "\t"
                      << endl;
-        ofoutputFile.close();
     }
     else {
         perror("Failed to write to the log");
@@ -72,12 +71,10 @@ int main(int argc, char* argv[])
     logstr.append(myPID);
     logstr.append(" consumed the item: ");
     logstr.append(myItem);
-    ofstream ofoutputFile (myLog, ios::app);
     if (ofoutputFile.is_open()) {
         ofoutputFile << getTheTime("") << "\t"
                      << " " << logstr << "\t"
                      << endl;
-        ofoutputFile.close();
     }
     else {
         perror("Failed to write to the log");
@@ -88,6 +85,8 @@ int main(int argc, char* argv[])
     mutex.Signal();
     full.Signal();
 
+    
+    ofoutputFile.close();
     return EXIT_SUCCESS;
 }
 
