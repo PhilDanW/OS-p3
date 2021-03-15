@@ -26,7 +26,17 @@ int main(int argc, char* argv[])
     string strlog = "Producer's PID: ";
     strlog.append(myPid);
     strlog.append(" has started.");
-    WriteLogFile(log, myLog);
+    ofstream ofoutputFile (myLog, ios::app);
+    if (myLog.is_open()) {
+        ofoutputFile << getTheTime("").c_str();
+                     << " " << strlog.c_str();
+                     << std::endl;
+        ofoutputFile.close();
+    }
+    else {
+        perror("Failed to write to the log");
+        return false;
+    }
   
     semaphores s(MUTEX, false);
     semaphores n(EMPTY, false);
@@ -59,7 +69,17 @@ int main(int argc, char* argv[])
         strlog.append(myPID);
         strlog.append(" put item in queue: ");
         strlog.append(myItem);
-        WriteLogFile(strlog, myLog);
+        ofstream ofoutputFile (myLog, ios::app);
+    if (myLog.is_open()) {
+        ofoutputFile << getTheTime("").c_str();
+                     << " " << strlog.c_str();
+                     << std::endl;
+        ofoutputFile.close();
+    }
+    else {
+        perror("Failed to write to the log");
+        return false;
+    }
       
         head->nextItem =(++head->nextItem) % head->size;
 
