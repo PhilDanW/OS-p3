@@ -14,7 +14,7 @@ semaphores::semaphores(key_t key, bool Create, int Value) {
             if (_semid > 0) {
                 semctl(_semid, 0, SETVAL, Value);
                 // make it the creator of the semaphore
-                creator = true;
+                _creator = true;
                 // show that initialization is successfully done
                 _isInitialized = true;
             }
@@ -22,7 +22,7 @@ semaphores::semaphores(key_t key, bool Create, int Value) {
         else {
             // find an already created Semaphore
             _semid = semget(key, 1, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-            creator = false;
+            _creator = false;
             if (_semid > 0) {
                 // show that initialization is successfully done
                 _isInitialized = true;
@@ -42,7 +42,7 @@ void semaphores::Signal() {
 
 //semaphore class destructor
 semaphores::~semaphores() {
-    if(creator && _isInitialized) {
+    if(_creator && _isInitialized) {
         semctl(_semid, 0, IPC_RMID);
     }
 }
