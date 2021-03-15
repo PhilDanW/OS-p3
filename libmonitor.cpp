@@ -27,6 +27,13 @@ void signal_handler(int signal)
 int monitor(int producers, int consumers, int seconds) {
   
   cout << "made it to the monitor process" << endl;
+  if(producers < 1 || consumers < 1 || seconds < 1)
+  {
+    errno = EINVAL;
+    perror("LibMonitor: Unknown option");
+    return EXIT_FAILURE;
+  }
+    
   //register the signal handler
   signal(SIGINT, signal_handler);
   //create all variables needed
