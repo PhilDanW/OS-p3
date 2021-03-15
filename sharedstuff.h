@@ -55,10 +55,7 @@ struct shmseg {
   int center;
 };
 
-
-
-std::string getTheTime(const char* prePendString)
-{
+std::string getTheTime(const char* prePendString) {
     time_t rawtime;
     struct tm * timeinfo;
     char buffer[10];
@@ -76,22 +73,17 @@ std::string getTheTime(const char* prePendString)
 }
 
 //function used to write to the log file
-bool WriteFile(std::string& logString, std::string LogFile)
-{
+bool WriteLogFile(std::string& logString, std::string LogFile) {
     // Open a file to write
     std::ofstream logFile (LogFile.c_str(), std::ofstream::out | std::ofstream::app);
-    if (logFile.is_open())
-    {
-        // Get the current local time
-//        string 
+    if (logFile.is_open()) {
         logFile << getTheTime("").c_str();
         logFile << " " << logString.c_str();
         logFile << std::endl;
         logFile.close();
         return true;
     }
-    else
-    {
+    else {
         perror("Failed to write to the log");
         return false;
     }
@@ -99,8 +91,7 @@ bool WriteFile(std::string& logString, std::string LogFile)
 
 //since there is no easy way to get a string from a int in C++
 //this function converts an int value into a string
-std::string getString(const int nVal)
-{
+std::string getString(const int nVal) {
     int length = snprintf( NULL, 0, "%d", nVal);
     char* sDep = (char*)malloc( length + 1 );
     snprintf( sDep, length + 1, "%d", nVal);
@@ -108,7 +99,5 @@ std::string getString(const int nVal)
     free(sDep);
     return strFinalVal;
 }
-
-
 
 #endif
