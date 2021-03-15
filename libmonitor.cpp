@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fstream>
+#include <vector>
 #include "semaphores.h"
 #include "libmonitor.h"
 #include "sharedstuff.h"
@@ -12,6 +13,9 @@ struct itemInfo* productQueue;
 
 static int processes = 19;
 static int buffer = 5120;
+
+vector<int> vecProducers;
+vector<int> vecConsumers;
 
 bool WriteLogFile(std::string&, std::string);
 std::string GetTimeFormatted(const char*);
@@ -26,11 +30,6 @@ void signal_handler(int signal)
 //during this process producers and consumers will be created as they are needed
 int monitor(string strLogFile, int producers, int consumers, int seconds) {
   
-  cout << "creating my arrays" << endl;
-  int producerArray[producers];
-  memset(producerArray, 0, producers*sizeof(int));
-  int consumerArray[consumers];
-  memset(consumerArray, 0, consumers*sizeof(int));
   //register the signal handler
   signal(SIGINT, signal_handler);
   //create all variables needed
@@ -95,16 +94,16 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
     pid_t pid = fork(producerProg, myLog);
     if(pid > 0)
     {
-      producerArray[i] = pid;
+      vecProducers.push_back(pid);
     }
   }
   int prodArraySize = sizeof(producerArray) / sizeof(producerArray[0]);
   int consArraySize = sizeof(consumerArray) / sizeof(consumerArray[0]);
   cout << prodArraySize << endl;
   cout << consArraySize << endl;
-  cout << "monitor: Process has started with " << prodArraySize << " Producers" << endl << endl;
+  cout << "monitor: Process has started with " << vecProducers.size() << " Producers" << endl << endl;
 
-  if(prodArraySize < 1)
+  if(vecProducers.size() < 1)
   {
     errno = ECANCELED;
     perror("monitor: Error: failed to create the necessary producers.");
@@ -120,18 +119,14 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
     s.Wait();
 
     // Check for a waiting, readyToProcess queue
-    if(productQueue[product->currentItem % QUEUE_SIZE] &&
-      consArraySize < (consumers+1))
+    if(productQueue[product->currentItem % QUEUE_SIZE] && vecConsumers.size() < (consumers+1))
     {
       // For a new consumer
       cout << "monitor: Assigning " << product->currentItem % QUEUE_SIZE << " to new consumer" << endl;
       pid_t pid = fork(consumerProg, strLogFile, product->currentItem%QUEUE_SIZE);
       if(pid > 0)
       {
-          for(int i = 0; i < consArraySize; i++) {
-              consumerArray[i] = pid;
-          }
-
+          vecConsumers.push_back(pid);
           // Increment Current Index and wrap it around if > queue size
           product->currentItem = (++productr->currentItem)%QUEUE_SIZE;
         
@@ -157,12 +152,12 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
     if (WIFEXITED(waitStatus) && waitPID > 0)
     {
       // Remove the consumer from the consumer array
-      for(int i=0; i < consArraySize; i++)
+      for(int i=0; i < vecConsumer.size(); i++)
       {
-        if(consumerArray[i] == waitPID)
+        if(vecConsumers[i] == waitPID)
         {
           cout << endl; // Put in a hard return.  Seems to look good
-          consumerArray[i] = 0;
+          vecConsumers.erase( vecConsumers.begin() + i);
           break;
         }
       }
@@ -179,18 +174,18 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
     
   // Shutdown all of the producers
   cout << "Time to shut down the producers" << endl;
-  for(int i=0; i < prodArraySize; i++)
+  for(int i=0; i < vecProducers.size(); i++)
   {
-    kill(producerArray[i], SIGQUIT); 
-    cout << producerArray[i] << "has been signaled to shutdown" << endl;
+    kill(vecProducers[i], SIGQUIT); 
+    cout << vecProducers[i] << "has been signaled to shutdown" << endl;
   }
 
   // Shutdown all of the consumers
   cout << "Time to shut down the consumers" << endl;
-  for(int i=0; i < consArraySize; i++)
+  for(int i=0; i < veConsumers.size(); i++)
   {
-    kill(consumerArray[i], SIGQUIT); 
-    cout << consumerArray[i] << "has been signaled to shutdown" << endl;
+    kill(vecConsumers[i], SIGQUIT); 
+    cout << vecConsumers[i] << "has been signaled to shutdown" << endl;
   }
     
   // After all producers and consumers are shutdown, detatch and deallocate the shared memory
