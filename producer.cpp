@@ -5,6 +5,7 @@
 #include <fstream>
 using namespace std;
 
+static void allocateMemory();
 volatile sig_atomic_t gSignalStatus = 0;
 void signal_handler(int signal)
 {
@@ -38,7 +39,7 @@ int main(int argc, char* argv[])
     // Get our entire queue
     struct itemInfo* queue  = (struct itemInfo*) (shm_addr + sizeof(int) + sizeof(head));
   
-    while(!sigQuitFlag)
+    while(!gSignalStatus)
     {
         int sleepTime = rand() % 5 + 1;
         sleep(sleepTime);
@@ -48,11 +49,11 @@ int main(int argc, char* argv[])
       
         int myValue = ((1 + 2) * (3 + 4) * (5 + 6));
       
-        queue[head.nextItem].value = myValue;
+        queue[head->nextItem].value = myValue;
         queue[head->nextItem].ready = true;
 
         // Log what happened into System Log
-        string myPID = getString(childPID) 
+        string myPID = getString(child); 
         string myItem = getString(head->nextItem);
         strlog = "Producer's PID: ";
         strlog.append(myPID);
@@ -66,6 +67,7 @@ int main(int argc, char* argv[])
         n.Signal();
 
         return EXIT_SUCCESS;
+    }
 }
 
 void allocateMemory() {
