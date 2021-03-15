@@ -64,7 +64,7 @@ bool WriteToLog(std::string& logString, std::string LogFile)
     {
         // Get the current local time
 //        string 
-        logFile << getTime("").c_str();
+        logFile << getTheTime("").c_str();
         logFile << " " << logString.c_str();
         logFile << std::endl;
         logFile.close();
@@ -77,19 +77,7 @@ bool WriteToLog(std::string& logString, std::string LogFile)
     }
 }
 
-//since there is no easy way to get a string from a int in C++
-//this function converts an int value into a string
-std::string getString(const int nVal)
-{
-    int length = snprintf( NULL, 0, "%d", nVal);
-    char* sDep = (char*)malloc( length + 1 );
-    snprintf( sDep, length + 1, "%d", nVal);
-    std::string strFinalVal = sDep;                    
-    free(sDep);
-    return strFinalVal;
-}
-
-std::string getTime(const char* prePendString)
+std::string getTheTime(const char* prePendString)
 {
     time_t rawtime;
     struct tm * timeinfo;
@@ -106,6 +94,19 @@ std::string getTime(const char* prePendString)
     strReturn.append(buffer);
     return strReturn;
 }
+
+//since there is no easy way to get a string from a int in C++
+//this function converts an int value into a string
+std::string getString(const int nVal)
+{
+    int length = snprintf( NULL, 0, "%d", nVal);
+    char* sDep = (char*)malloc( length + 1 );
+    snprintf( sDep, length + 1, "%d", nVal);
+    std::string strFinalVal = sDep;                    
+    free(sDep);
+    return strFinalVal;
+}
+
 
 
 #endif
