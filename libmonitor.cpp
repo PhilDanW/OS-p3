@@ -17,6 +17,7 @@ int producerArray[100] = {0};
 int consumerArray[100] = {0};
 
 bool WriteLogFile(std::string&, std::string);
+std::string GetTimeFormatted(const char*);
 
 volatile sig_atomic_t gSignalStatus = 0;
 void signal_handler(int signal)
@@ -248,6 +249,24 @@ bool WriteLogFile(std::string& logString, std::string LogFile)
         perror("Unable to write to log file");
         return false;
     }
+}
+
+std::string GetTimeFormatted(const char* prePendString)
+{
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[10];
+    
+    // Get time
+    time (&rawtime);
+    timeinfo = localtime (&rawtime);
+
+    // Format time for HH:MM:SS
+    strftime (buffer,80,"%T",timeinfo);
+
+    std::string strReturn = prePendString;
+    strReturn.append(buffer);
+    return strReturn;
 }
                
 //setup shared memory and allocate a segment with length of the queue * (size of product + size of product queue)
