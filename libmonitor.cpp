@@ -111,7 +111,7 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
   int waitStatus;
   
   cout << "outside the while loop" << endl;
-  while(!isDead && !gSignalStatus && !((time(NULL)-elapSeconds) > seconds))
+  do
   {
     s.Wait();
 
@@ -168,6 +168,7 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
     }
 
   } 
+  while(!isDead && !gSignalStatus && !((time(NULL)-elapSeconds) > seconds));
     
   // Shutdown all of the producers
   cout << "Time to shut down the producers" << endl;
