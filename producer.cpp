@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
     int sleepTime = rand() % 10 + 1;
     
     int child = getpid();
-    string myPid = getString(child)
+    string myPid = getString(child);
     string strlog = "Producer's PID: ";
     strlog.append(myPid);
     strlog.append(" has started.");
