@@ -97,10 +97,7 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
       vecProducers.push_back(pid);
     }
   }
-  int prodArraySize = sizeof(producerArray) / sizeof(producerArray[0]);
-  int consArraySize = sizeof(consumerArray) / sizeof(consumerArray[0]);
-  cout << prodArraySize << endl;
-  cout << consArraySize << endl;
+ 
   cout << "monitor: Process has started with " << vecProducers.size() << " Producers" << endl << endl;
 
   if(vecProducers.size() < 1)
@@ -128,7 +125,7 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
       {
           vecConsumers.push_back(pid);
           // Increment Current Index and wrap it around if > queue size
-          product->currentItem = (++productr->currentItem)%QUEUE_SIZE;
+          product->currentItem = (++product->currentItem)%QUEUE_SIZE;
         
           // Report what happened ** Move Cursor left: \033[3D
           cout << "LibMonitor: Consumer PID " << pid << " started" << endl;
@@ -152,7 +149,7 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
     if (WIFEXITED(waitStatus) && waitPID > 0)
     {
       // Remove the consumer from the consumer array
-      for(int i=0; i < vecConsumer.size(); i++)
+      for(int i=0; i < vecConsumers.size(); i++)
       {
         if(vecConsumers[i] == waitPID)
         {
@@ -182,7 +179,7 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
 
   // Shutdown all of the consumers
   cout << "Time to shut down the consumers" << endl;
-  for(int i=0; i < veConsumers.size(); i++)
+  for(int i=0; i < vecConsumers.size(); i++)
   {
     kill(vecConsumers[i], SIGQUIT); 
     cout << vecConsumers[i] << "has been signaled to shutdown" << endl;
