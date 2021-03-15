@@ -116,7 +116,7 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
     s.Wait();
 
     // Check for a waiting, readyToProcess queue
-    if(productQueue[product->currentItem % QUEUE_SIZE] && vecConsumers.size() < (consumers+1))
+    if(productQueue[product->currentItem % QUEUE_SIZE].ready && vecConsumers.size() < (consumers+1))
     {
       // For a new consumer
       cout << "monitor: Assigning " << product->currentItem % QUEUE_SIZE << " to new consumer" << endl;
