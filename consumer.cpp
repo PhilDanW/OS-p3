@@ -6,6 +6,7 @@
 
 using namespace std;
 
+static void allocateMemory();
 volatile sig_atomic_t gSignalStatus = 0;
 void signal_handler(int signal)
 {
@@ -22,20 +23,19 @@ int main(int argc, char* argv[])
   
     pid_t Pid = getpid();
   
-    string myPID = getString(Pid)
+    string myPID = getString(Pid);
     string logstr = "Consumer's PID: ";
     logstr.append(myPID);
     logstr.append(" has started."
     ofstream ofoutputFile (myLog, ios::app);
-    if (myLog.is_open()) {
-        ofoutputFile << getTheTime("").c_str();
-                     << " " << logstr.c_str();
-                     << std::endl;
+    if (ofoutputFile.is_open()) {
+        ofoutputFile << getTheTime("") << "\t"
+                     << " " << logstr << "\t"
+                     << endl;
         ofoutputFile.close();
     }
     else {
         perror("Failed to write to the log");
-        return false;
     }
   
     semaphores mutex(MUTEX, false);
@@ -66,23 +66,21 @@ int main(int argc, char* argv[])
     queue[item].ready = false;
 
     // Log what happened into System Log
-    string myPID = getString(Pid); 
+    myPID = getString(Pid); 
     string myItem = getString(item);
     logstr = "Consumer's PID: ";
     logstr.append(myPID);
     logstr.append(" consumed the item: ");
     logstr.append(myItem);
-    
     ofstream ofoutputFile (myLog, ios::app);
-    if (myLog.is_open()) {
-        ofoutputFile << getTheTime("").c_str();
-                     << " " << logstr.c_str();
-                     << std::endl;
+    if (ofoutputFile.is_open()) {
+        ofoutputFile << getTheTime("") << "\t"
+                     << " " << logstr << "\t"
+                     << endl;
         ofoutputFile.close();
     }
     else {
         perror("Failed to write to the log");
-        return false;
     }
 
     cout << "Consumer: " << Pid << " consumed the item: " << item << endl;
@@ -97,7 +95,7 @@ void allocateMemory() {
   
   shm_id = shmget(SHARED, 0, 0);
   if (shm_id == -1) {
-      perror("consumer: Error: failed to find shm_id " << shm_id << endl);
+      perror("consumer: Error: failed to find shm_id.");
       exit(EXIT_FAILURE);
   }
 
