@@ -4,8 +4,8 @@
 #include <unistd.h>
 
 #include "libmonitor.h"
-#include "sharedstuff.h"
-#include "semaphores.h"
+#include "sharedStructures.h"
+#include "productSemaphores.h"
 
 // Static process counter => Never > 20 (1 Parent + 19 Children)
 const int MAX_PROCESSES = 19;
@@ -18,8 +18,6 @@ struct ProductHeader* productHeader;
 struct ProductItem* productItemQueue;
 vector<int> vecProducers;
 vector<int> vecConsumers;
-
-int forkProcess(string, string , int);
 
 // SIGINT handling
 volatile sig_atomic_t sigIntFlag = 0;
