@@ -1,54 +1,71 @@
 #include <sys/sem.h>
 #include <sys/stat.h>
 #include <iostream>
-#include "semaphores.h"
+#include "productSemaphores.h"
+
+// Params for Semaphores
+#define PERMS (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)
+
 using namespace std;
 
-semaphores::semaphores(key_t key, bool Create, int Value) {
-    if(key > 0) {
-        // this means we are creating a new key
-        if(Create) {
-            //give semget all its Permissions
-            _semid = semget(key, 1, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH | IPC_EXCL | IPC_CREAT);
+productSemaphores::productSemaphores(key_t key, bool Create, int Value)
+{
+    // If a valid key
+    if(key > 0)
+    {
+        // If Creating a new Key
+        if(Create)
+        {
+//            #if defined(__linux__)
+            _semid = semget(key, 1, PERMS | IPC_EXCL | IPC_CREAT);
+//            #else
+//            _semid = semget(key, 1, SEM_R | SEM_A | IPC_EXCL | IPC_CREAT);
+//            #endif
             // If successful, set it's value to Value
-            if (_semid > 0) {
+            if (_semid > 0)
+            {
                 semctl(_semid, 0, SETVAL, Value);
-                // make it the creator of the semaphore
-                _creator = true;
-                // show that initialization is successfully done
+                // Write success to log file
+
+                // Set as the creator of the Sem
+                _bCreator = true;
+                // Set as properly initialized
                 _isInitialized = true;
             }
         }
-        else {
-            // find an already created Semaphore
-            _semid = semget(key, 1, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-            _creator = false;
-            if (_semid > 0) {
-                // show that initialization is successfully done
+        else
+        {
+            // Get an already created Semaphore
+//            #if defined(__linux__)
+            _semid = semget(key, 1, PERMS);
+//            #else
+//            _semid = semget(key, 1, SEM_R | SEM_A);
+//            #endif
+
+
+//            _semid = semget(key, 1, SEM_R | SEM_A );
+            _bCreator = false;
+            if (_semid > 0)
+            {
+                // Set as properly initialized
                 _isInitialized = true;
             }
         }
     }
 }
 
-// Semaphore Signal function
-void semaphores::Signal() {
-    structSemaBuf.sem_num = 0;
-    structSemaBuf.sem_op = 1;
-    structSemaBuf.sem_flg = 0;
-    semop(_semid, &structSemaBuf, 1);
-//	cout << "signal: " << _semid << endl;
-}
-
-//semaphore class destructor
-semaphores::~semaphores() {
-    if(_creator && _isInitialized) {
+productSemaphores::~productSemaphores()
+{
+    if(_bCreator && _isInitialized)
+    {
         semctl(_semid, 0, IPC_RMID);
+
+        // Log as released
     }
 }
 
-//semaphore wait function
-void semaphores::Wait() {
+void productSemaphores::Wait()
+{
     structSemaBuf.sem_num = 0;
     structSemaBuf.sem_op = -1;
     structSemaBuf.sem_flg = 0;
@@ -56,6 +73,12 @@ void semaphores::Wait() {
 //	cout << "wait: " << _semid << endl;
 }
 
-
-
-
+// Semaphore Signal
+void productSemaphores::Signal() 
+{
+    structSemaBuf.sem_num = 0;
+    structSemaBuf.sem_op = 1;
+    structSemaBuf.sem_flg = 0;
+    semop(_semid, &structSemaBuf, 1);
+//	cout << "signal: " << _semid << endl;
+}
