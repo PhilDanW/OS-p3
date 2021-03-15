@@ -1,97 +1,114 @@
 #include <iostream>
 #include <string.h>
+#include <vector>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include "libmonitor.h"
+
+// Constants
+// Only 20 total: Producers + Consumers + 1 Monitor
+// Monitor always take 1, so we set to 19
+const int MaxNumberOfChildren = 19;
+const int MaxNumberOfSeconds = 100;
+
+// Forward declarations
+static void show_usage(std::string);
+
 using namespace std;
 
-// Constant values for the max number of children and seconds allowed
-const int children = 19;
-const int seconds = 100;
-
-static void prog_use(std::string);
-
-//gather command line arguments here
+// Main - expecting arguments
 int main(int argc, char* argv[])
 {
-    string strLogFile = "logfile";
-    int option;
-    int producers = 2;
-    int consumers = 6;
-    int timeSeconds = 100;
+    // This main area will only handle the processing
+    // of the incoming arguments. After that, all processing
+    // will happen within the llibmonitor library functions.
+
+    string strLog =  "Monitor app by Brett Huffman for CMP SCI 4760";
+    cout << endl << strLog << endl << endl;
+
+    // Argument processing
+    int opt;
+    string strLogFile = "logfile"; // Default setting
+    int nNumberOfProducers = 2; // Default setting
+    int nNumberOfConsumers = 6; // Default setting
+    int nNumberOfSeconds = 100; // Default setting
 
     // Go through each parameter entered and
     // prepare for processing
     opterr = 0;
-    while ((option = getopt(argc, argv, "ho:p:c:t:")) != -1) {
-        switch (option) {
+    while ((opt = getopt(argc, argv, "ho:p:c:t:")) != -1) {
+        switch (opt) {
             case 'h':
-                prog_use(argv[0]);
+                show_usage(argv[0]);
                 return EXIT_SUCCESS;
             case 'o':
                 strLogFile = optarg;
                 break;
             case 'p':
-                producers = atoi(optarg);
+                nNumberOfProducers = atoi(optarg);
                 break;
             case 'c':
-                consumers = atoi(optarg);
+                nNumberOfConsumers = atoi(optarg);
                 break;
             case 't':
-                timeSeconds = atoi(optarg);
+                nNumberOfSeconds = atoi(optarg);
                 break;
-            default:
-                perror ("master: Error: Illegal option used on for the command. Check usage.");
-                prog_use(argv[0]);
+            case '?': // Unknown arguement                
+                if (isprint (optopt))
+                {
+                    errno = EINVAL;
+                    perror("Unknown option");
+                }
+                else
+                {
+                    errno = EINVAL;
+                    perror("Unknown option character");
+                }
+                return EXIT_FAILURE;
+            default:    // An bad input parameter was entered
+                // Show error because a bad option was found
+                perror ("master: Error: Illegal option found");
+                show_usage(argv[0]);
                 return EXIT_FAILURE;
         }
     }
 
-    //set the actual values for the number of consumers and producers for the program
-    consumers = min(consumers, children-producers);
-    timeSeconds = min(timeSeconds, seconds);
-    
-    //check if all values are valid
-    if(strLogFile.size() < 1) {
-        errno = EINVAL;
-        perror("master: Error: the logfile does not exist ");
+    // Set the correct default values (min of both)
+    nNumberOfConsumers = min(nNumberOfConsumers, MaxNumberOfChildren-nNumberOfProducers);
+    nNumberOfSeconds = min(nNumberOfSeconds, MaxNumberOfSeconds);
+
+    if(nNumberOfConsumers < nNumberOfProducers)
+    {
+        perror ("master: Error: You must have more Consumers than Producers");
+        show_usage(argv[0]);
         return EXIT_FAILURE;
     }
-    else if(producers < 1) {
-        errno = EINVAL;
-        perror("master: Error: not enough producers given");
-        return EXIT_FAILURE;
-    }
-    else if (consumers < 1) {
-        errno = EINVAL;
-        perror("master: Error: not enough consumers given");
-        return EXIT_FAILURE;
-    }
-    else if(timeSeconds < 1) {
-        errno = EINVAL;
-        perror("master: Error: insufficient amount of time");
-        return EXIT_FAILURE;
-    }
-  
-    // output the parameters that are going to be sent to the monitor process
-    cout << producers << " is the number of Producers" << endl;
-    cout << consumers << " is the number of Consumers" << endl;
-    cout << timeSeconds << "is the number of Seconds" << endl;
+
+    // Output what is going to happen
+    cout << "Monitor starting: " << endl 
+        << "\t" << nNumberOfProducers << " Producers" << endl
+        << "\t" << nNumberOfConsumers << " Consumers" << endl
+        << "\t" << nNumberOfSeconds  << " Max Seconds" << endl << endl;
 
     // Start the monitor process, returning whatever monitor returns.
-    return monitor(strLogFile, producers, consumers, timeSeconds);
+    return monitorProcess(strLogFile, nNumberOfProducers, nNumberOfConsumers, nNumberOfSeconds);
+
 }
 
-static void prog_use(std::string name)
+
+// Handle errors in input arguments by showing usage screen
+static void show_usage(std::string name)
 {
-   std::cerr << std::endl << "\t" << name << " [-h] [-o logfile] [-p m] [-c n] [-t time]" << std::endl
-   << "Input options:" << std::endl
-   << "-o 'logfile' Name of file to keep program logs" << std::endl
-   << "-p 'x' number of producers to make" << std::endl
-   << "-c 'y' number of consumers to make" << std::endl
-   << "-t 'time' seconds after which the process will terminate"<< std::endl 
-   << std::endl;
+    std::cerr << std::endl
+              << "Usage:\t" << name << " [-h]" << std::endl
+              << "\t" << name << " [-h] [-o logfile] [-p m] [-c n] [-t time]" << std::endl
+              << "Options:" << std::endl
+              << "  -o logfile Name of the file to save logs; default: logfile" << std::endl
+              << "  -p m Number of producers; default: m = 2" << std::endl
+              << "  -c n Number of consumers; default: n = 6" << std::endl
+              << "  -t time The time in seconds after which the process will terminate, even if it has not finished. (Default: 100)"
+              << std::endl << std::endl;
 }
