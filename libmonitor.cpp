@@ -42,6 +42,7 @@ int monitor(int producers, int consumers, int seconds) {
   elapSeconds = time(NULL);
   
   logstr = "Monitor process has begun...\n";
+  cout << logstr << endl;
   ofstream ofoutputFile (myLog, ios::app);
     if (ofoutputFile.is_open()) {
         ofoutputFile << getTheTime("") << "\t"
