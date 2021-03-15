@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <fstream>
 #include "semaphores.h"
-#include "monitor.h"
+#include "libmonitor.h"
 #include "sharedstuff.h"
 using namespace std;
 
