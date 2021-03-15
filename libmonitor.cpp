@@ -116,65 +116,66 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
   
   cout << "outside the while loop" << endl;
   while(!isDead && !gSignalStatus && !((time(NULL)-elapSeconds) > seconds))
-{ 
-    // Check for new products to consume
+  {
     s.Wait();
+
     // Check for a waiting, readyToProcess queue
-    
-     
-      // For a new consumer
-      cout << "monitor: Assigning " << product->currentItem % 20 << " to consumer" << endl;
-      pid_t pid = fork(consumerProg, myLog, product->currentItem % 20);
-      
-      
-        if(pid > 0) 
-        {
-          for(int i=0; i < consumers; i++) 
-          {
-              // Keep track of the new consumer in consumer vector
-              consumerArray[i] = pid;
-
-              // Increment Current Index and wrap it around if > queue size
-              product->currentItem = (++product->currentItem) % 20;
-           }
-           // Report what happened ** Move Cursor left: \033[3D
-           cout << "monitor: the consumer pid " << pid << " started" << endl;
-         }
-     
-      
-    s.Signal();  
-    // waitpid() suspends execution of the current process until a child specified by pid argument has changed state  
-    // WNOHANG returns immediately if no child has exited.
-    // WUNTRACED returns if a child has stopped
-    // WCONTINUED returns if a stopped child has been resumed
-    waitPID = waitpid(-1, &waitStatus, WNOHANG | WUNTRACED | WCONTINUED);    
-    
-    //Check to see if no PIDs are in-process
-    if (isDead) {
-      isComplete = true; 
-      break;              
-    }
-
-    // if the child process was done correctly
-    if (WIFEXITED(waitStatus) && waitPID > 0) 
+    if(productQueue[product->currentItem % QUEUE_SIZE]. &&
+      consArraySize < (consumers+1))
     {
-        // take the consumer out of the consumer array
-        for(int i=0; i < consArraySize ; i++) 
-        {
-            if(consumerArray[i] == waitPID) 
-            {
-                consumerArray[i] = 0;
-                break;
-            }
-        }
-    } else if (waitPID && WIFSIGNALED(waitStatus) > 0) {
-        cout << "Killed by signal. PID: " << waitPID << WTERMSIG(waitStatus) << endl;
-    } else if (waitPID && WIFSIGNALED(waitStatus) > 0) {
-        cout << "Stopped by signal. PID: " << waitPID << WTERMSIG(waitStatus) << endl;
-    } else if (waitPID && WIFSIGNALED(waitStatus) > 0) {
-            continue;
+      // For a new consumer
+      cout << "monitor: Assigning " << product->currentItem % QUEUE_SIZE << " to new consumer" << endl;
+      pid_t pid = fork(consumerProg, strLogFile, product->currentItem%QUEUE_SIZE);
+      if(pid > 0)
+      {
+          for(int i = 0; i < consArraySize; i++) {
+              consumerArray[i] = pid
+          }
+
+          // Increment Current Index and wrap it around if > queue size
+          productHeader->pCurrent = (++productHeader->pCurrent)%PRODUCT_QUEUE_LENGTH;
+        
+          // Report what happened ** Move Cursor left: \033[3D
+          cout << "LibMonitor: Consumer PID " << pid << " started" << endl;
+      }
     }
-} 
+
+    s.Signal();
+    
+    // Note :: We use the WNOHANG to call waitpid without blocking
+    // If it returns 0, it does not have a PID waiting
+    waitPID = waitpid(-1, &waitStatus, WNOHANG | WUNTRACED | WCONTINUED);
+
+
+    // No PIDs are in-process
+    if (isDead) {
+      isComplete = true;   // We say true so that we exit out of main
+      break;              // loop and free up all necessary data
+    }
+
+    // Child processed correctly
+    if (WIFEXITED(wstatus) && waitPID > 0)
+    {
+      // Remove the consumer from the consumer array
+      for(int i=0; i < consArraySize; i++)
+      {
+        if(consumerArray[i] == waitPID)
+        {
+          cout << endl; // Put in a hard return.  Seems to look good
+          consumerArray[i] = 0;
+          break;
+        }
+      }
+    
+    } else if (WIFSIGNALED(wstatus) && waitPID > 0) {
+        cout << waitPID << " killed by signal " << WTERMSIG(waitStatus) << endl;
+    } else if (WIFSTOPPED(wstatus) && waitPID > 0) {
+        cout << waitPID << " stopped by signal " << WTERMSIG(waitStatus) << endl;
+    } else if (WIFCONTINUED(waitStatus) && waitPID > 0) {
+        continue;
+    }
+
+  } 
     
   // Shutdown all of the producers
   cout << "Time to shut down the producers" << endl;
