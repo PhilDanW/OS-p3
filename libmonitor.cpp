@@ -60,7 +60,7 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
     
   cout << "made it to memory allocation" << endl;
   int memory = sizeof(itemPointer) + sizeof(itemInfo) * QUEUE_SIZE ;
-    shm_id = shmget(SHARED, memory, IPC_CREAT | IPC_EXCL | 0660);
+    shm_id = shmget(SHARED, memory, IPC_CREAT | 0666);
     if (shm_id == -1) {
         perror("monitor: Error: could not allocate a segment of shared memory");
         exit(EXIT_FAILURE);
