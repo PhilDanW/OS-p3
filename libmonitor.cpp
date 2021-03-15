@@ -4,8 +4,8 @@
 #include <unistd.h>
 
 #include "libmonitor.h"
-#include "sharedStructures.h"
-#include "productSemaphores.h"
+#include "sharedstuff.h"
+#include "semaphores.h"
 
 // Static process counter => Never > 20 (1 Parent + 19 Children)
 const int MAX_PROCESSES = 19;
