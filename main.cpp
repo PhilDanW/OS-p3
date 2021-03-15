@@ -17,7 +17,6 @@ static void prog_use(std::string);
 //gather command line arguments here
 int main(int argc, char* argv[])
 {
-    string logFile = "This is the LogFile";
     int option;
     int producers = 2;
     int consumers = 6;
@@ -82,7 +81,7 @@ int main(int argc, char* argv[])
     cout << timeSeconds << "is the number of Seconds" << endl;
 
     // Start the monitor process, returning whatever monitor returns.
-    return monitor(logFile, producers, consumers, timeSeconds);
+    return monitor(producers, consumers, timeSeconds);
 }
 
 static void prog_use(std::string name)
