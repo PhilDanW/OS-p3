@@ -56,7 +56,7 @@ semaphores::semaphores(key_t key, bool Create, int Value)
 
 semaphores::~semaphores()
 {
-    if(_bCreator && _isInitialized)
+    if(_creator && _isInitialized)
     {
         semctl(_semid, 0, IPC_RMID);
 
