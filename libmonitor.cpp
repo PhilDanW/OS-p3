@@ -116,14 +116,12 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
   
   cout << "outside the while loop" << endl:
   while(!isDead && !gSignalStatus && !((time(NULL)-elapSeconds) > seconds))
-  {
-      
-    cout << "now I'm inside the while loop" << endl;  
+  { 
     // Check for new products to consume
     s.Wait();
     
     // Check for a waiting, readyToProcess queue
-    if(productQueue[product->currentItem % QUEUE_SIZE].ready) 
+    if(productQueue[product->currentItem % 20].ready && consArraySize < (consumers +1)) 
     {
       // For a new consumer
       cout << "monitor: Assigning " << product->currentItem % QUEUE_SIZE << " to consumer" << endl;
