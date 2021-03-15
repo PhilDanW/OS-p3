@@ -118,7 +118,7 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
   while(!isDead && !gSignalStatus && !((time(NULL)-elapSeconds) > seconds))
   { 
     // Check for new products to consume
-    
+    s.Wait();
     // Check for a waiting, readyToProcess queue
     if(productQueue[product->currentItem % 20].ready && consArraySize < (consumers +1)) 
     {
@@ -141,7 +141,8 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
            cout << "monitor: the consumer pid " << pid << " started" << endl;
          }
     }
-        
+    
+    s.Signal();  
     // waitpid() suspends execution of the current process until a child specified by pid argument has changed state  
     // WNOHANG returns immediately if no child has exited.
     // WUNTRACED returns if a child has stopped
