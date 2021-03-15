@@ -11,7 +11,7 @@ struct itemPointer* product;
 struct itemInfo* productQueue;
 
 static int processes = 19;
-static int buffer = 5120
+static int buffer = 5120;
 
 bool WriteLogFile(std::string&, std::string);
 std::string GetTimeFormatted(const char*);
@@ -27,8 +27,10 @@ void signal_handler(int signal)
 int monitor(string strLogFile, int producers, int consumers, int seconds) {
   
   cout << "creating my arrays" << endl;
-  int producerArray[producers] = {0};
-  int consumerArray[consumers] = {0};
+  int producerArray[producers];
+  memset(producerArray, 0, producers*sizeof(int));
+  int consumerArray[consumers];
+  memset(consumerArray, 0, consumers*sizeof(int));
   //register the signal handler
   signal(SIGINT, signal_handler);
   //create all variables needed
