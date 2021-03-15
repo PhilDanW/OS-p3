@@ -1,14 +1,14 @@
 #include <sys/sem.h>
 #include <sys/stat.h>
 #include <iostream>
-#include "productSemaphores.h"
+#include "semaphores.h"
 
 // Params for Semaphores
 #define PERMS (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)
 
 using namespace std;
 
-productSemaphores::productSemaphores(key_t key, bool Create, int Value)
+semaphores::semaphores(key_t key, bool Create, int Value)
 {
     // If a valid key
     if(key > 0)
@@ -54,7 +54,7 @@ productSemaphores::productSemaphores(key_t key, bool Create, int Value)
     }
 }
 
-productSemaphores::~productSemaphores()
+semaphores::~productSemaphores()
 {
     if(_bCreator && _isInitialized)
     {
@@ -64,7 +64,7 @@ productSemaphores::~productSemaphores()
     }
 }
 
-void productSemaphores::Wait()
+void semaphores::Wait()
 {
     structSemaBuf.sem_num = 0;
     structSemaBuf.sem_op = -1;
@@ -74,7 +74,7 @@ void productSemaphores::Wait()
 }
 
 // Semaphore Signal
-void productSemaphores::Signal() 
+void semaphores::Signal() 
 {
     structSemaBuf.sem_num = 0;
     structSemaBuf.sem_op = 1;
