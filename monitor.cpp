@@ -38,7 +38,7 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
   elapSeconds = time(NULL);
   
   logstr = "Monitor process has begun...\n";
-  WriteToLog(logstr, myLog);
+  WriteFile(logstr, myLog);
     
   // Create the Semaphores
   semaphores s(MUTEX, true, 1);
@@ -62,7 +62,7 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
   }
   
   logstr = "Beginning process with the producers";
-  WriteToLog(logstr, myLog);
+  WriteFile(logstr, myLog);
   
   // Start up producers by fork/exec nNumberOfProducers
   for(int i=0; i < producers; i++)
@@ -183,7 +183,7 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
   }
     
   logstr = "The producers and consumers have been shutdown and all memory deallocated";
-  WriteToLog(logstr, myLog);
+  WriteFile(logstr, myLog);
     
   return EXIT_SUCCESS;
 }
