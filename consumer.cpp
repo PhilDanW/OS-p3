@@ -1,119 +1,135 @@
-#include <fstream>
 #include <iostream>
 #include <unistd.h>
-#include "semaphores.h"
-#include "sharedstuff.h"
+#include "sharedStructures.h"
+#include "productSemaphores.h"
+#include <fstream>
+
+// Forward Declarations
+static void show_usage(std::string);
+
+// SIGQUIT handling
+volatile sig_atomic_t sigQuitFlag = 0;
+void sigQuitHandler(int sig){ // can be called asynchronously
+  sigQuitFlag = 1; // set flag
+}
 
 using namespace std;
 
-static void allocateMemory();
-volatile sig_atomic_t gSignalStatus = 0;
-void signal_handler(int signal)
-{
-    gSignalStatus = 1;
-}
-
 int main(int argc, char* argv[])
 {
-    int item = atoi(argv[1]);
-    string myLog = argv[2];
-    srand(time(NULL));
-    int sleepTime = rand() % 10 + 1;
-    signal(SIGINT, signal_handler);
-  
-    pid_t Pid = getpid();
-  
-    string myPID = getString(Pid);
-    string logstr = "Consumer's PID: ";
-    logstr.append(myPID);
-    logstr.append(" has started.");
-    ofstream ofoutputFile (myLog, ios::app);
-    if (ofoutputFile.is_open()) {
-        ofoutputFile << getTheTime("") << "\t"
-                     << " " << logstr << "\t"
-                     << endl;
-    }
-    else {
-        perror("Failed to write to the log");
-    }
-  
-    semaphores mutex(MUTEX, false);
-    semaphores null(EMPTY, false);
-    semaphores full(FULL, false);
-  
-    allocateMemory();
-  
-    // Get the queue header
-    struct itemPointer* head = (struct itemPointer*) (shm_addr);
-    // Get our entire queue
-    struct itemInfo* queue  = (struct itemInfo*) (shm_addr + sizeof(int) + sizeof(head));
-  
-    while(!sleepTime && !gSignalStatus)
-    {
-      sleep(sleepTime);
-      sleepTime--;
-    }
-  
-    null.Wait();
-    mutex.Wait();
+  // Get the Index to the array assigned to this
+  // consumer to process
+  if(argc < 2)
+  {
+    cout << "Args: " << argv[0] << endl;
+    perror("Consumer: Incorrect argument found");
+    exit(EXIT_FAILURE);
+  }
+  // We can now get the index to the item to process
+  const int nItemToProcess = atoi(argv[1]);
 
-    // Consume the value
-    float newValue = queue[item].value;
+  // And the log file string
+  string strLogFile = argv[2];
 
-    // Reset values
-    queue[item].value = 0.0f;
-    queue[item].ready = false;
+  // Seed the randomizer
+  srand(time(NULL));
 
-    // Log what happened into System Log
-    myPID = getString(Pid); 
-    string myItem = getString(item);
-    logstr = "Consumer's PID: ";
-    logstr.append(myPID);
-    logstr.append(" consumed the item: ");
-    logstr.append(myItem);
-    if (ofoutputFile.is_open()) {
-        ofoutputFile << getTheTime("") << "\t"
-                     << " " << logstr << "\t"
-                     << endl;
-    }
-    else {
-        perror("Failed to write to the log");
-    }
+  // Register SIGQUIT handling
+  signal(SIGINT, sigQuitHandler);
 
-    cout << "Consumer: " << Pid << " consumed the item: " << item << endl;
+  // Log startup of the child
+  const pid_t nPid = getpid();
+  string strLog = "Consumer: PID ";
+  strLog.append(GetStringFromInt(nPid));
+  strLog.append(" Started");
+  WriteLogFile(strLog, strLogFile);
 
-    mutex.Signal();
-    full.Signal();
+  // Find the necessary Semaphores
+  productSemaphores s(KEY_MUTEX, false);
+  productSemaphores n(KEY_EMPTY, false);
+  productSemaphores e(KEY_FULL, false);
 
-    
-    ofoutputFile.close();
-    return EXIT_SUCCESS;
-}
+  if(!s.isInitialized() || !n.isInitialized() || !e.isInitialized())
+  {
+    perror("Consumer: Could not successfully find Semaphores");
+    exit(EXIT_FAILURE);
+  }
 
-void allocateMemory() {
-  
-  shm_id = shmget(SHARED, 0, 0);
+  // Open the connection to shared memory
+  // Allocate the shared memory
+  // And get ready for read/write
+  // Get a reference to the shared memory, if available
+  shm_id = shmget(KEY_SHMEM, 0, 0);
   if (shm_id == -1) {
-      perror("consumer: Error: failed to find shm_id.");
+      perror("Consumer: Could not successfully find Shared Memory");
       exit(EXIT_FAILURE);
   }
 
-  // Get the size of the memory
+  // Read the memory size and calculate the array size
   struct shmid_ds shmid_ds;
   shmctl(shm_id, IPC_STAT, &shmid_ds);
   size_t realSize = shmid_ds.shm_segsz;
 
-  // use shmget to setup with the size of the memory
-  shm_id = shmget(SHARED, realSize, 0);
+  // Now we have the size - actually setup with shmget
+  shm_id = shmget(KEY_SHMEM, realSize, 0);
   if (shm_id == -1) {
-      perror("consumer: Error: failed to setup memory with shmget");
+      perror("Consumer: Could not successfully find Shared Memory");
       exit(EXIT_FAILURE);
   }
 
   // attach the shared memory segment to our process's address space
   shm_addr = (char*)shmat(shm_id, NULL, 0);
   if (!shm_addr) { /* operation failed. */
-      perror("consumer: Error: failed to attach the shared memeory");
+      perror("Consumer: Could not successfully attach Shared Memory");
       exit(EXIT_FAILURE);
   }
+
+  // Get the queue header
+  struct ProductHeader* productHeader = 
+      (struct ProductHeader*) (shm_addr);
+  // Get our entire queue
+  struct ProductItem*productItemQueue = 
+      (struct ProductItem*) (shm_addr+sizeof(int)+sizeof(productHeader));
+
+  // Get a random time to sleep between 1-10 seconds
+  int nSleepTime = rand()%10+1;
+
+  // Sleep for the random time
+  while(!sigQuitFlag && !nSleepTime)
+  {
+    sleep(nSleepTime);
+    nSleepTime--;
+  }
+
+  // Get Exclusive Access via Semaphores
+  n.Wait();
+  s.Wait();
+
+  // Debug print queue
+  //for(int i=0;i<productHeader->QueueSize;i++ )
+  //  cout << productItemQueue[i].itemValue << " ";
+  //cout << endl;
+
+  // Consume the value
+  float fNewPiVal =
+    productItemQueue[nItemToProcess].itemValue;
+
+  // Reset values
+  productItemQueue[nItemToProcess].itemValue = 0.0f;
+  productItemQueue[nItemToProcess].readyToProcess = false;
+
+  // Log what happened into System Log
+  strLog = "Consumer: PID ";
+  strLog.append(GetStringFromInt(nPid));
+  strLog.append(" Consumed Item in Queue: ");
+  strLog.append(GetStringFromInt(nItemToProcess));
+  WriteLogFile(strLog, strLogFile);
+
+  cout << "Consumer: " << nPid << " consumed item in queue: " << nItemToProcess << endl;
+
+  s.Signal();
+  e.Signal();
+
+  // Just let Consumer successfully die after it's done
+  return EXIT_SUCCESS;
 }
