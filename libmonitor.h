@@ -2,10 +2,11 @@
 #define LIBMONITOR
 
 #include <iostream>
+
 using namespace std;
 
+// Function Declarations
 int monitorProcess(string, int, int, int);
-int fork(string, string, int arrayItem = -1);
-void allocateMemory();
+int forkProcess(string, string, int nArrayItem = -1);
 
 #endif
