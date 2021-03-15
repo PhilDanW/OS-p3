@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
     cout << timeSeconds << "is the number of Seconds" << endl;
 
     // Start the monitor process, returning whatever monitor returns.
-    return monitor(producers, consumers, timeSeconds);
+    return monitor(strLogFile, producers, consumers, timeSeconds);
 }
 
 static void prog_use(std::string name)
