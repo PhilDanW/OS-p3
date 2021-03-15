@@ -116,7 +116,7 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
   
   cout << "outside the while loop" << endl;
   while(!isDead && !gSignalStatus && !((time(NULL)-elapSeconds) > seconds))
-  { 
+{ 
     // Check for new products to consume
     s.Wait();
     // Check for a waiting, readyToProcess queue
@@ -141,6 +141,8 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
            cout << "monitor: the consumer pid " << pid << " started" << endl;
          }
     }
+    
+          
     
     s.Signal();  
     // waitpid() suspends execution of the current process until a child specified by pid argument has changed state  
@@ -167,20 +169,14 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
                 break;
             }
         }
-     } 
-     else if (waitPID && WIFSIGNALED(waitStatus) > 0) 
-     {
+    } else if (waitPID && WIFSIGNALED(waitStatus) > 0) {
         cout << "Killed by signal. PID: " << waitPID << WTERMSIG(waitStatus) << endl;
-     } 
-     else if (waitPID && WIFSIGNALED(waitStatus) > 0) 
-     {
+    } else if (waitPID && WIFSIGNALED(waitStatus) > 0) {
         cout << "Stopped by signal. PID: " << waitPID << WTERMSIG(waitStatus) << endl;
-     } 
-     else if (waitPID && WIFSIGNALED(waitStatus) > 0) 
-     {
+    } else if (waitPID && WIFSIGNALED(waitStatus) > 0) {
             continue;
-     }
-  }
+    }
+} 
     
   // Shutdown all of the producers
   cout << "Time to shut down the producers" << endl;
