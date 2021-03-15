@@ -114,7 +114,7 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
   pid_t waitPID;
   int waitStatus;
   
-  cout << "outside the while loop" << endl:
+  cout << "outside the while loop" << endl;
   while(!isDead && !gSignalStatus && !((time(NULL)-elapSeconds) > seconds))
   { 
     // Check for new products to consume
