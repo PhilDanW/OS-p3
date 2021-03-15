@@ -1,5 +1,5 @@
-#ifndef MONITOR
-#define MONITOR
+#ifndef LIBMONITOR
+#define LIBMONITOR
 
 #include <iostream>
 using namespace std;
