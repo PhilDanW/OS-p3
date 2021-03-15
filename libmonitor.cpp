@@ -11,10 +11,7 @@ struct itemPointer* product;
 struct itemInfo* productQueue;
 
 static int processes = 19;
-static int buffer = 5120;
-
-int producerArray[100] = {0};
-int consumerArray[100] = {0};
+static int buffer = 5120
 
 bool WriteLogFile(std::string&, std::string);
 std::string GetTimeFormatted(const char*);
@@ -29,7 +26,9 @@ void signal_handler(int signal)
 //during this process producers and consumers will be created as they are needed
 int monitor(string strLogFile, int producers, int consumers, int seconds) {
   
-  cout << "made it to the monitor process" << endl;
+  cout << "creating my arrays" << endl;
+  int producerArray[producers] = {0};
+  int consumerArray[consumers] = {0};
   //register the signal handler
   signal(SIGINT, signal_handler);
   //create all variables needed
