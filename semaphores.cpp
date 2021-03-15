@@ -8,7 +8,7 @@
 
 using namespace std;
 
-semaphores::semaphores(key_t key, bool Create, int Value)
+productSemaphores::productSemaphores(key_t key, bool Create, int Value)
 {
     // If a valid key
     if(key > 0)
@@ -28,7 +28,7 @@ semaphores::semaphores(key_t key, bool Create, int Value)
                 // Write success to log file
 
                 // Set as the creator of the Sem
-                _creator = true;
+                _bCreator = true;
                 // Set as properly initialized
                 _isInitialized = true;
             }
@@ -44,7 +44,7 @@ semaphores::semaphores(key_t key, bool Create, int Value)
 
 
 //            _semid = semget(key, 1, SEM_R | SEM_A );
-            _creator = false;
+            _bCreator = false;
             if (_semid > 0)
             {
                 // Set as properly initialized
@@ -54,9 +54,9 @@ semaphores::semaphores(key_t key, bool Create, int Value)
     }
 }
 
-semaphores::~semaphores()
+productSemaphores::~productSemaphores()
 {
-    if(_creator && _isInitialized)
+    if(_bCreator && _isInitialized)
     {
         semctl(_semid, 0, IPC_RMID);
 
@@ -64,7 +64,7 @@ semaphores::~semaphores()
     }
 }
 
-void semaphores::Wait()
+void productSemaphores::Wait()
 {
     structSemaBuf.sem_num = 0;
     structSemaBuf.sem_op = -1;
@@ -74,7 +74,7 @@ void semaphores::Wait()
 }
 
 // Semaphore Signal
-void semaphores::Signal() 
+void productSemaphores::Signal() 
 {
     structSemaBuf.sem_num = 0;
     structSemaBuf.sem_op = 1;
