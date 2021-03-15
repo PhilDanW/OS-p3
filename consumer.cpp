@@ -1,7 +1,9 @@
+#include <fstream>
 #include <iostream>
 #include <unistd.h>
+#include "semaphores.h"
 #include "sharedstuff.h"
-#include <fstream>
+
 using namespace std;
 
 volatile sig_atomic_t gSignalStatus = 0;
@@ -20,15 +22,15 @@ int main(int argc, char* argv[])
   
     pid_t Pid = getpid();
   
-    std::string myPID = std::to_string(Pid)
-    string log = "Consumer's PID: ";
-    log.append(myPID);
-    log.append(" has started."
-    WriteToLog(log, myLog);
+    string myPID = getString(Pid)
+    string logstr = "Consumer's PID: ";
+    logstr.append(myPID);
+    logstr.append(" has started."
+    WriteToLog(logstr, myLog);
   
-    semaphores s(MUTEX, false);
-    semaphores n(EMPTY, false);
-    semaphores e(FULL, false);
+    semaphores mutex(MUTEX, false);
+    semaphores null(EMPTY, false);
+    semaphores full(FULL, false);
   
     allocateMemory();
   
@@ -37,14 +39,14 @@ int main(int argc, char* argv[])
     // Get our entire queue
     struct itemInfo* queue  = (struct itemInfo*) (shm_addr + sizeof(int) + sizeof(head));
   
-    while(!sigQuitFlag && !sleepTime)
+    while(!sleepTime && !sigQuitFlag)
     {
       sleep(sleepTime);
       sleepTime--;
     }
   
-    n.Wait();
-    s.Wait();
+    null.Wait();
+    mutex.Wait();
 
     // Consume the value
     float newValue = queue[item].value;
@@ -54,18 +56,18 @@ int main(int argc, char* argv[])
     queue[item].ready = false;
 
     // Log what happened into System Log
-    std::string myPID = std::to_string(Pid); 
-    std::string myItem = std::to_string(item);
-    log = "Consumer's PID: ";
-    log.append(myPID);
-    log.append(" Consumed Item in Queue: ");
-    log.append(myItem);
-    WriteToLog(strLog, strLogFile);
+    string myPID = getString(Pid); 
+    string myItem = getString(item);
+    logstr = "Consumer's PID: ";
+    logstr.append(myPID);
+    logstr.append(" consumed the item: ");
+    logstr.append(myItem);
+    WriteToLog(logstr, myLog);
 
-    cout << "Consumer: " << nPid << " consumed item in queue: " << nItemToProcess << endl;
+    cout << "Consumer: " << Pid << " consumed the item: " << item << endl;
 
-    s.Signal();
-    e.Signal();
+    mutex.Signal();
+    full.Signal();
 
     return EXIT_SUCCESS;
 }
