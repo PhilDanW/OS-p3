@@ -118,7 +118,6 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
   while(!isDead && !gSignalStatus && !((time(NULL)-elapSeconds) > seconds))
   { 
     // Check for new products to consume
-    s.Wait();
     
     // Check for a waiting, readyToProcess queue
     if(productQueue[product->currentItem % 20].ready && consArraySize < (consumers +1)) 
