@@ -76,7 +76,7 @@ std::string getTheTime(const char* prePendString)
 }
 
 //function used to write to the log file
-bool WriteToLog(std::string& logString, std::string LogFile)
+bool WriteFile(std::string& logString, std::string LogFile)
 {
     // Open a file to write
     std::ofstream logFile (LogFile.c_str(), std::ofstream::out | std::ofstream::app);
