@@ -18,7 +18,7 @@
 
 //constants
 //shared memory keys
-const key_t SHARED = 0x54321;
+const key_t SHARED = 0;
 const key_t MUTEX = 0x54321;
 const key_t EMPTY = 0x54322;
 const key_t FULL = 0x54323;
