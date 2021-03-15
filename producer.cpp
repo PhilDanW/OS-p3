@@ -27,10 +27,10 @@ int main(int argc, char* argv[])
     strlog.append(myPid);
     strlog.append(" has started.");
     ofstream ofoutputFile (myLog, ios::app);
-    if (myLog.is_open()) {
-        ofoutputFile << getTheTime("").c_str();
-                     << " " << strlog.c_str();
-                     << std::endl;
+    if (ofoutputFile.is_open()) {
+        ofoutputFile << getTheTime("") << "\t"
+                     << " " << logstr << "\t"
+                     << endl;
         ofoutputFile.close();
     }
     else {
@@ -70,16 +70,17 @@ int main(int argc, char* argv[])
         strlog.append(" put item in queue: ");
         strlog.append(myItem);
         ofstream ofoutputFile (myLog, ios::app);
-    if (myLog.is_open()) {
-        ofoutputFile << getTheTime("").c_str();
-                     << " " << strlog.c_str();
-                     << std::endl;
-        ofoutputFile.close();
-    }
-    else {
-        perror("Failed to write to the log");
-        return false;
-    }
+        if (ofoutputFile.is_open()) {
+                    ofoutputFile << getTheTime("") << "\t"
+                                 << " " << logstr << "\t"
+                                 << endl;
+                    ofoutputFile.close();
+        }
+        else {
+            perror("Failed to write to the log");
+            return false;
+        }
+    
       
         head->nextItem =(++head->nextItem) % head->size;
 
