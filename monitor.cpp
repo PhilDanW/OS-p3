@@ -38,7 +38,17 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
   elapSeconds = time(NULL);
   
   logstr = "Monitor process has begun...\n";
-  WriteLogFile(logstr, myLog);
+  ofstream ofoutputFile (myLog, ios::app);
+    if (myLog.is_open()) {
+        ofoutputFile << getTheTime("").c_str();
+                     << " " << logstr.c_str();
+                     << std::endl;
+        ofoutputFile.close();
+    }
+    else {
+        perror("Failed to write to the log");
+        return false;
+    }
     
   // Create the Semaphores
   semaphores s(MUTEX, true, 1);
@@ -62,7 +72,17 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
   }
   
   logstr = "Beginning process with the producers";
-  WriteLogFile(logstr, myLog);
+  ofstream ofoutputFile (myLog, ios::app);
+    if (myLog.is_open()) {
+        ofoutputFile << getTheTime("").c_str();
+                     << " " << logstr.c_str();
+                     << std::endl;
+        ofoutputFile.close();
+    }
+    else {
+        perror("Failed to write to the log");
+        return false;
+    }
   
   // Start up producers by fork/exec nNumberOfProducers
   for(int i=0; i < producers; i++)
@@ -183,7 +203,17 @@ int monitor(string myLog, int producers, int consumers, int seconds) {
   }
     
   logstr = "The producers and consumers have been shutdown and all memory deallocated";
-  WriteLogFile(logstr, myLog);
+  ofstream ofoutputFile (myLog, ios::app);
+    if (myLog.is_open()) {
+        ofoutputFile << getTheTime("").c_str();
+                     << " " << logstr.c_str();
+                     << std::endl;
+        ofoutputFile.close();
+    }
+    else {
+        perror("Failed to write to the log");
+        return false;
+    }
     
   return EXIT_SUCCESS;
 }
