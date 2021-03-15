@@ -45,10 +45,6 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
     
   cout << "some variables set" << endl;  
   
-  pid_t waitPID;
-  int waitStatus;  
-  
-  
   string logstr = "Monitor process has begun...\n";
   WriteLogFile(logstr, strLogFile);
     
@@ -114,6 +110,9 @@ int monitor(string strLogFile, int producers, int consumers, int seconds) {
     perror("monitor: Error: failed to create the necessary producers.");
     isDead = true;
   }
+    
+  pid_t waitPID;
+  int waitStatus;
   
   while(!isDead && !gSignalStatus && !((time(NULL)-elapSeconds) > seconds))
   {
