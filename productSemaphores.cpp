@@ -1,7 +1,7 @@
 #include <sys/sem.h>
 #include <sys/stat.h>
 #include <iostream>
-#include "semaphores.h"
+#include "productSemaphores.h"
 
 // Params for Semaphores
 #define PERMS (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)
