@@ -52,7 +52,7 @@ int monitor(int producers, int consumers, int seconds) {
   int waitStatus;  
   
   
-  logstr = "Monitor process has begun...\n";
+  string logstr = "Monitor process has begun...\n";
   cout << logstr << endl;
   ofstream ofoutputFile (myLog, ios::app);
     if (ofoutputFile.is_open()) {
