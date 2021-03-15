@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
                 prog_use(argv[0]);
                 return EXIT_SUCCESS;
             case 'o':
-                strlogFile = optarg;
+                strLogFile = optarg;
                 break;
             case 'p':
                 producers = atoi(optarg);
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
     timeSeconds = min(timeSeconds, seconds);
     
     //check if all values are valid
-    if(logFile.size() < 1) {
+    if(strLogFile.size() < 1) {
         errno = EINVAL;
         perror("master: Error: the logfile does not exist ");
         return EXIT_FAILURE;
