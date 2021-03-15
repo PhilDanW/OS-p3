@@ -74,7 +74,6 @@ int monitor(int producers, int consumers, int seconds) {
   }
   
   logstr = "Beginning process with the producers";
-  ofoutputFile (myLog, ios::app);
     if (ofoutputFile.is_open()) {
         ofoutputFile << getTheTime("") << "\t"
                      << " " << logstr << "\t"
@@ -205,7 +204,6 @@ int monitor(int producers, int consumers, int seconds) {
   }
     
   logstr = "The producers and consumers have been shutdown and all memory deallocated";
-  ofoutputFile (myLog, ios::app);
     if (ofoutputFile.is_open()) {
         ofoutputFile << getTheTime("") << "\t"
                      << " " << logstr << "\t"
