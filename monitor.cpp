@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string.h>
 #include <unistd.h>
+#include <fstream>
 #include "semaphores.h"
 #include "monitor.h"
 #include "sharedstuff.h"
