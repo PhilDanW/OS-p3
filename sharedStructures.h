@@ -110,4 +110,4 @@ std::string GetStringFromInt(const int nVal)
     return strFinalVal;
 }
 
-#endif // SHAREDSTRUCTURES_H
+#endif
