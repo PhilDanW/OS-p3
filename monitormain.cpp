@@ -103,6 +103,8 @@ int main(int argc, char* argv[])
 static void show_usage(std::string name)
 {
     std::cerr << std::endl
+              << name << " - Monitor app by Brett Huffman for CMP SCI 4760" << std::endl
+              << std::endl
               << "Usage:\t" << name << " [-h]" << std::endl
               << "\t" << name << " [-h] [-o logfile] [-p m] [-c n] [-t time]" << std::endl
               << "Options:" << std::endl
