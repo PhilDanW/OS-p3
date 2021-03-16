@@ -1,35 +1,40 @@
-target1 := monitor
-source1 := $(shell find . -name "monitor*.cpp") ./productSemaphores.cpp
+appname1 := monitor
+srcfiles := $(shell find . -name "monitor*.cpp") ./productSemaphores.cpp
+
+# For debugging
+#$(error   VAR is $(srcfiles))
 
 LDLIBS := libmonitor.a
-objFiles1  := $(patsubst %.cpp, %.o, $(source1))
+objects1  := $(patsubst %.cpp, %.o, $(srcfiles))
 
-all: $(target1)
+all: $(appname1)
 
-$(target1): $(objFiles1) $(LDLIBS)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(target1) $(objFiles1) $(LDLIBS)
+$(appname1): $(objects1) $(LDLIBS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(appname1) $(objects1) $(LDLIBS)
 
+# Static monitor library
 $(LDLIBS): libmonitor.o
 	ar $(ARFLAGS) $@ $^
 
-target2 := producer
-source2 := $(shell find . -name "producer*.cpp") ./productSemaphores.cpp
-objFiles2  := $(patsubst %.cpp, %.o, $(source2))
+# App 2 - builds the producer program
+appname2 := producer
+srcfiles := $(shell find . -name "producer*.cpp") ./productSemaphores.cpp
+objects2  := $(patsubst %.cpp, %.o, $(srcfiles))
 
-all: $(target2)
+all: $(appname2)
 
-$(target2): $(objFiles2)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(target2) $(objFiles2) $(LDLIBS)
+$(appname2): $(objects2)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(appname2) $(objects2) $(LDLIBS)
 
 # App 3 - builds the consumer program
-target3 := consumer
-source3 := $(shell find . -name "consumer*.cpp") ./productSemaphores.cpp
-objFiles3  := $(patsubst %.cpp, %.o, $(source3))
+appname3 := consumer
+srcfiles := $(shell find . -name "consumer*.cpp") ./productSemaphores.cpp
+objects3  := $(patsubst %.cpp, %.o, $(srcfiles))
 
-all: $(target3)
+all: $(appname3)
 
-$(target3): $(objFiles3)
-	$(CXX) $(CXXLAGS) $(LDFLAGS) -o $(target3) $(objFiles3) $(LDLIBS)
+$(appname3): $(objects3)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(appname3) $(objects3) $(LDLIBS)
 
 clean:
 	rm -f $(objects1)
