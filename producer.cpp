@@ -1,8 +1,8 @@
 #include <iostream>
 #include <unistd.h>
 #include <fstream>
-#include "sharedstuff.h"
-#include "semaphores.h"
+#include "sharedStructures.h"
+#include "productSemaphores.h"
 
 // Forward Declarations
 static void show_usage(std::string);
