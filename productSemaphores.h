@@ -1,5 +1,5 @@
-#ifndef SEMAPHORES
-#define SEMAPHORES
+#ifndef PRODUCTSEMAPHORES
+#define PRODUCTSEMAPHORES
 
 #include <sys/sem.h>
 
@@ -29,4 +29,4 @@ class productSemaphores
 
 };
 
-#endif 
+#endif
