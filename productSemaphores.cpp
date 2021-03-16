@@ -1,3 +1,7 @@
+//Philip Wright
+//CMP4760 Project3
+//this part of the program is a special class that is used to make semaphores 
+//for the monitor process
 #include <sys/sem.h>
 #include <sys/stat.h>
 #include <iostream>
@@ -35,15 +39,8 @@ productSemaphores::productSemaphores(key_t key, bool Create, int Value)
         }
         else
         {
-            // Get an already created Semaphore
-//            #if defined(__linux__)
+            // Get created Semaphore
             _semid = semget(key, 1, PERMS);
-//            #else
-//            _semid = semget(key, 1, SEM_R | SEM_A);
-//            #endif
-
-
-//            _semid = semget(key, 1, SEM_R | SEM_A );
             _bCreator = false;
             if (_semid > 0)
             {
@@ -80,5 +77,4 @@ void productSemaphores::Signal()
     structSemaBuf.sem_op = 1;
     structSemaBuf.sem_flg = 0;
     semop(_semid, &structSemaBuf, 1);
-//	cout << "signal: " << _semid << endl;
 }
