@@ -1,3 +1,6 @@
+//Philip Wright
+//CMP4760 Project3
+//libmonitor.h file for libmonitor.cpp
 #ifndef LIBMONITOR
 #define LIBMONITOR
 
