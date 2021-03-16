@@ -1,3 +1,6 @@
+//Philip Wright
+//CMP4760 Project3
+//this part of the program is just the .h file for productSemaphores.cpp
 #ifndef PRODUCTSEMAPHORES
 #define PRODUCTSEMAPHORES
 
