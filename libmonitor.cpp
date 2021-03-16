@@ -38,7 +38,7 @@ int monitorProcess(string strLogFile, int nNumberOfProducers, int nMaxNumberOfCo
     nMaxNumberOfConsumers < 1 || nSecondsToTerminate < 1)
   {
     errno = EINVAL;
-    perror("libmonitor process: could not recognize that option");
+    perror("monitor process: could not recognize that option");
     return EXIT_FAILURE;
   }
 
@@ -64,17 +64,23 @@ int monitorProcess(string strLogFile, int nNumberOfProducers, int nMaxNumberOfCo
   productSemaphores n(KEY_EMPTY, true, 0);
   productSemaphores e(KEY_FULL, true, PRODUCT_QUEUE_LENGTH);
 
+  if(!s.isInitialized() || !n.isInitialized() || !e.isInitialized())
+  {
+    perror("LibMonitor: Could not successfully create Semaphores");
+    exit(EXIT_FAILURE);
+  }
+  
   // Setup shared memory
   int memSize = sizeof(ProductHeader) + sizeof(ProductItem) * PRODUCT_QUEUE_LENGTH;
   shm_id = shmget(KEY_SHMEM, memSize, IPC_CREAT | IPC_EXCL | 0660);
   if (shm_id == -1) {
-      perror("libmonitor process: Failed to allocate shared memory");
+      perror("monitor process: Failed to allocate shared memory");
       exit(EXIT_FAILURE);
   }
   // attach the shared memory segment
   shm_addr = (char*)shmat(shm_id, NULL, 0);
   if (!shm_addr) { /* operation failed. */
-      perror("libmonitor process: Failed to attach shared memory");
+      perror("monitor process: Failed to attach shared memory");
       exit(EXIT_FAILURE);
   }
   // Get the queue header
@@ -94,7 +100,7 @@ int monitorProcess(string strLogFile, int nNumberOfProducers, int nMaxNumberOfCo
       productItemQueue[i].itemValue = 0.0f;
   }
 
-  strLog = "libmonitor process: Starting up the producers";
+  strLog = "monitor process: Starting up the producers";
   WriteLogFile(strLog, strLogFile);
   
   // use fork and exec to start up the producers
@@ -107,13 +113,13 @@ int monitorProcess(string strLogFile, int nNumberOfProducers, int nMaxNumberOfCo
       vecProducers.push_back(pid);
     }
   }
-  cout << "libmonitor process: Started with " << vecProducers.size() << " Producers" << endl << endl;
+  cout << "monitor process: Started with " << vecProducers.size() << " Producers" << endl << endl;
 
   // Check that we actually have some producers
   if(vecProducers.size() < 1)
   {
     errno = ECANCELED;
-    perror("libmonitor process: Failed to create Producers");
+    perror("monitor process: Failed to create Producers");
     isKilled = true;
   }
   
@@ -133,7 +139,7 @@ int monitorProcess(string strLogFile, int nNumberOfProducers, int nMaxNumberOfCo
       vecConsumers.size() < (nMaxNumberOfConsumers+1))
     {
       //new consumer
-      cout << "libmonitor process: Assigning " << productHeader->pCurrent%PRODUCT_QUEUE_LENGTH << " to new consumer" << endl;
+      cout << "monitor process: Assigning " << productHeader->pCurrent%PRODUCT_QUEUE_LENGTH << " to new consumer" << endl;
       pid_t pid = forkProcess(ConsumerProcess, strLogFile, productHeader->pCurrent%PRODUCT_QUEUE_LENGTH);
       if(pid > 0)
       {
@@ -142,7 +148,7 @@ int monitorProcess(string strLogFile, int nNumberOfProducers, int nMaxNumberOfCo
 
         productHeader->pCurrent = (++productHeader->pCurrent)%PRODUCT_QUEUE_LENGTH;
 
-        cout << "libmonitor process: Consumer PID " << pid << " has started" << endl;
+        cout << "monitor process: Consumer PID " << pid << " has started" << endl;
       }
     }
 
@@ -181,52 +187,52 @@ int monitorProcess(string strLogFile, int nNumberOfProducers, int nMaxNumberOfCo
   }
 
   // Signal to the producers to shutdown
-  cout << "libmonitor process: Shutting down producers" << endl;
+  cout << "monitor process: Shutting down producers" << endl;
   for(int i=0; i < vecProducers.size(); i++)
   {
     kill(vecProducers[i], SIGQUIT); 
-    cout << "libmonitor process: Producer PID " << vecProducers[i] << " signaled shutdown" << endl;
+    cout << "monitor process: Producer PID " << vecProducers[i] << " signaled shutdown" << endl;
   }
 
-  cout << "libmonitor process: Shutting down consumers" << endl;
+  cout << "monitor process: Shutting down consumers" << endl;
   for(int i=0; i < vecConsumers.size(); i++)
   {
     kill(vecConsumers[i], SIGQUIT); 
-    cout << "libmonitor process: Consumer PID " << vecConsumers[i] << " signaled shutdown" << endl;
+    cout << "monitor process: Consumer PID " << vecConsumers[i] << " signaled shutdown" << endl;
   }
 
   // Check for timeout
   if(sigIntFlag)
   {
-    string strLog = "libmonitor process: Ctrl-C shutdown successful";
+    string strLog = "monitor process: Ctrl-C shutdown successful";
     WriteLogFile(strLog, strLogFile);
     cout << strLog << endl;
   }
   else
   {
-    string strLog = "libmonitor process: Timeout shutdown successful";
+    string strLog = "monitor process: Timeout shutdown successful";
     WriteLogFile(strLog, strLogFile);
     cout << strLog << endl;
   }
 
   // Dettach shared memory segment from process's address space
   cout << endl;
-  cout << "libmonitor process: De-allocating shared memory" << endl;
+  cout << "monitor process: De-allocating shared memory" << endl;
   if (shmdt(shm_addr) == -1) {
-      perror("libmonitor process: Error detaching shared memory");
+      perror("monitor process: Error detaching shared memory");
   }
 
   // De-allocate the shared memory segment.
   if (shmctl(shm_id, IPC_RMID, NULL) == -1) {
-      perror("libmonitor process: Error deallocating shared memory ");
+      perror("monitor process: Error deallocating shared memory ");
   }
 
-  cout << "libmonitor process: Shared memory De-allocated" << endl << endl;
+  cout << "monitor process: Shared memory De-allocated" << endl << endl;
 
   if(isKilled)
     return EXIT_FAILURE;
 
-  strLog = "libmonitor process: : All producers and consumers terminated";
+  strLog = "monitor process: : All producers and consumers terminated";
   WriteLogFile(strLog, strLogFile);
 
   return EXIT_SUCCESS;
@@ -241,7 +247,7 @@ int forkProcess(string strProcess, string strLogFile, int nArrayItem)
         {
             // Signal to any child process to exit
 
-            perror("LibMonitor: Could not fork process");
+            perror("monitor process: Could not fork process");
             return EXIT_FAILURE;
         }
         // Child process here
