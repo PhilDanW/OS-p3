@@ -37,14 +37,14 @@ struct ProductItem {
     float itemValue;        // The actual Product 
 };
 
-const key_t KEY_SHMEM = 0;  // Shared key
+const key_t KEY_SHMEM = 0x54321;  // Shared key
 int shm_id; // Shared Mem ident
 char* shm_addr;
 
 // Product Semaphores
-const key_t KEY_MUTEX = 0;
-const key_t KEY_EMPTY = 2;
-const key_t KEY_FULL = 3;
+const key_t KEY_MUTEX = 0x54321;
+const key_t KEY_EMPTY = 0x54322;
+const key_t KEY_FULL = 0x54323;
 
 struct shmseg {
    int cntr;
