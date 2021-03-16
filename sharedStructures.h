@@ -1,3 +1,7 @@
+//Philip Wright
+//CMP4760 Project3
+//this part of the project is a .h file that contains many shared variables, 
+//structures, and helper functions
 #ifndef SHAREDSTRUCTURES_H
 #define SHAREDSTRUCTURES_H
 
@@ -16,22 +20,21 @@
 #include <iostream>
 #include <fstream>
 
-// Arguement processing
+// for arguement processing
 extern int opterr;
 
-// Critical Section Processing
+// for critical section processing
 enum state { idle, want_in, in_cs };
 
 // Shared Memory structures
 struct ProductHeader {
-    int pNextQueueItem; // Pointer to next item for Producer
-    int pCurrent;       // Pointer to next item for Consumer
-    int QueueSize;   // Size of the queue
+    int pNextQueueItem; // Point to next item for Producer
+    int pCurrent;       // Point to next item for Consumer
+    int QueueSize;   // Size of queue
 };
 struct ProductItem {
     bool readyToProcess;    // Ready to Process
-    float itemValue;        // The actual "Product" being returned 
-                            // from the Producer - A little Easter Egg
+    float itemValue;        // The actual Product 
 };
 
 const key_t KEY_SHMEM = 0x54321;  // Shared key
@@ -55,10 +58,8 @@ const int PRODUCT_QUEUE_LENGTH = 20;
 const char* ProducerProcess = "./producer";
 const char* ConsumerProcess = "./consumer";
 
-/***************************************************
- * Helper Functions
- * *************************************************/
-// For time formatting used throughout both programs
+// Helper Functions
+
 std::string GetTimeFormatted(const char* prePendString)
 {
     time_t rawtime;
