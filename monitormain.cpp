@@ -1,3 +1,7 @@
+//Philip Wright
+//CMP4760 Project3
+//this part of the program is the main function that accepts command line arguments
+//and feeds them into the monitor process to begin the main functionality of the program
 #include <iostream>
 #include <string.h>
 #include <vector>
@@ -8,36 +12,27 @@
 #include <errno.h>
 #include "libmonitor.h"
 
-// Constants
-// Only 20 total: Producers + Consumers + 1 Monitor
 // Monitor always take 1, so we set to 19
 const int MaxNumberOfChildren = 19;
 const int MaxNumberOfSeconds = 100;
 
-// Forward declarations
+// declaration of usage function
 static void show_usage(std::string);
 
 using namespace std;
 
-// Main - expecting arguments
+// main function that expects command line arguments
 int main(int argc, char* argv[])
 {
-    // This main area will only handle the processing
-    // of the incoming arguments. After that, all processing
-    // will happen within the llibmonitor library functions.
-
-    string strLog =  "Monitor app by Brett Huffman for CMP SCI 4760";
-    cout << endl << strLog << endl << endl;
-
-    // Argument processing
+    // switch loop for argument processing
     int opt;
-    string strLogFile = "logfile"; // Default setting
-    int nNumberOfProducers = 2; // Default setting
-    int nNumberOfConsumers = 6; // Default setting
-    int nNumberOfSeconds = 100; // Default setting
+    //these values are entered as defaults if the userr does not specify any options
+    string strLogFile = "logfile";
+    int nNumberOfProducers = 2; 
+    int nNumberOfConsumers = 6; 
+    int nNumberOfSeconds = 100; 
 
-    // Go through each parameter entered and
-    // prepare for processing
+    //switch through each parameter given
     opterr = 0;
     while ((opt = getopt(argc, argv, "ho:p:c:t:")) != -1) {
         switch (opt) {
@@ -56,7 +51,7 @@ int main(int argc, char* argv[])
             case 't':
                 nNumberOfSeconds = atoi(optarg);
                 break;
-            case '?': // Unknown arguement                
+            case '?':               
                 if (isprint (optopt))
                 {
                     errno = EINVAL;
@@ -68,15 +63,14 @@ int main(int argc, char* argv[])
                     perror("Unknown option character");
                 }
                 return EXIT_FAILURE;
-            default:    // An bad input parameter was entered
-                // Show error because a bad option was found
+            default:
                 perror ("master: Error: Illegal option found");
                 show_usage(argv[0]);
                 return EXIT_FAILURE;
         }
     }
 
-    // Set the correct default values (min of both)
+    //now that we have input set the values if the user enter in specific values
     nNumberOfConsumers = min(nNumberOfConsumers, MaxNumberOfChildren-nNumberOfProducers);
     nNumberOfSeconds = min(nNumberOfSeconds, MaxNumberOfSeconds);
 
@@ -88,10 +82,10 @@ int main(int argc, char* argv[])
     }
 
     // Output what is going to happen
-    cout << "Monitor starting: " << endl 
-        << "\t" << nNumberOfProducers << " Producers" << endl
-        << "\t" << nNumberOfConsumers << " Consumers" << endl
-        << "\t" << nNumberOfSeconds  << " Max Seconds" << endl << endl;
+    cout << "Monitor has started: " << endl 
+        << "\t" << nNumberOfProducers << " is the number Producers" << endl
+        << "\t" << nNumberOfConsumers << " is the number Consumers" << endl
+        << "\t" << nNumberOfSeconds  << " is the number of Seconds" << endl << endl;
 
     // Start the monitor process, returning whatever monitor returns.
     return monitorProcess(strLogFile, nNumberOfProducers, nNumberOfConsumers, nNumberOfSeconds);
@@ -103,14 +97,12 @@ int main(int argc, char* argv[])
 static void show_usage(std::string name)
 {
     std::cerr << std::endl
-              << name << " - Monitor app by Brett Huffman for CMP SCI 4760" << std::endl
-              << std::endl
               << "Usage:\t" << name << " [-h]" << std::endl
               << "\t" << name << " [-h] [-o logfile] [-p m] [-c n] [-t time]" << std::endl
               << "Options:" << std::endl
-              << "  -o logfile Name of the file to save logs; default: logfile" << std::endl
-              << "  -p m Number of producers; default: m = 2" << std::endl
-              << "  -c n Number of consumers; default: n = 6" << std::endl
-              << "  -t time The time in seconds after which the process will terminate, even if it has not finished. (Default: 100)"
-              << std::endl << std::endl;
+              << "  -o logfile Name of the file to save logs" << std::endl
+              << "  -p m Number of producers" << std::endl
+              << "  -c n Number of consumers" << std::endl
+              << "  -t time The time in seconds after which the process will terminate"<< std::endl 
+              << std::endl;
 }
