@@ -37,7 +37,7 @@ struct ProductItem {
     float itemValue;        // The actual Product 
 };
 
-const key_t KEY_SHMEM = 0x54321;  // Shared key
+const key_t KEY_SHMEM = 0;  // Shared key
 int shm_id; // Shared Mem ident
 char* shm_addr;
 
