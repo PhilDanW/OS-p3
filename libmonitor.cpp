@@ -60,9 +60,9 @@ int monitorProcess(string strLogFile, int nNumberOfProducers, int nMaxNumberOfCo
 
 
   // create the semaphores needed
-  productSemaphores s(KEY_MUTEX, true, 1);
-  productSemaphores n(KEY_EMPTY, true, 0);
-  productSemaphores e(KEY_FULL, true, PRODUCT_QUEUE_LENGTH);
+  s = productSemaphores(KEY_MUTEX, true, 1);
+  n = productSemaphores(KEY_EMPTY, true, 0);
+  e = productSemaphores(KEY_FULL, true, PRODUCT_QUEUE_LENGTH);
 
   if(!s.isInitialized() || !n.isInitialized() || !e.isInitialized())
   {
