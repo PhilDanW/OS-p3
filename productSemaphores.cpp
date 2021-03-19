@@ -21,7 +21,7 @@ productSemaphores::productSemaphores(key_t key, bool Create, int Value)
         if(Create)
         {
 //            #if defined(__linux__)
-            _semid = semget(key, 1, PERMS | IPC_EXCL | IPC_CREAT);
+            _semid = semget(key, 1, PERMS | O_EXCL | O_CREAT);
 //            #else
 //            _semid = semget(key, 1, SEM_R | SEM_A | IPC_EXCL | IPC_CREAT);
 //            #endif
