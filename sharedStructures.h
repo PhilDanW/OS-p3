@@ -42,9 +42,9 @@ int shm_id; // Shared Mem ident
 char* shm_addr;
 
 // Product Semaphores
-const key_t KEY_MUTEX = ftok(".", 'm');
-const key_t KEY_EMPTY = ftok(".", 'e');
-const key_t KEY_FULL = ftok(".", 'f');
+const key_t KEY_MUTEX = ftok("/etc/hosts", 'm');
+const key_t KEY_EMPTY = ftok('/etc/hosts', 'e');
+const key_t KEY_FULL = ftok("/etc/hosts", 'f');
 
 struct shmseg {
    int cntr;
