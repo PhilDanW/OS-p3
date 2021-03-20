@@ -37,14 +37,14 @@ struct ProductItem {
     float itemValue;        // The actual Product 
 };
 
-const key_t KEY_SHMEM = ftok(".", 's');  // Shared key
+const key_t KEY_SHMEM = ftok(".", 'q');  // Shared key
 int shm_id; // Shared Mem ident
 char* shm_addr;
 
 // Product Semaphores
-const key_t KEY_MUTEX = ftok("/etc/hosts", 'm');
-const key_t KEY_EMPTY = ftok('/etc/hosts', 'e');
-const key_t KEY_FULL = ftok("/etc/hosts", 'f');
+const key_t KEY_MUTEX = ftok(".", 'c');
+const key_t KEY_EMPTY = ftok(".", 'b');
+const key_t KEY_FULL = ftok(".", 'a');
 
 struct shmseg {
    int cntr;
