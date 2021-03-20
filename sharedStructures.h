@@ -42,9 +42,9 @@ int shm_id; // Shared Mem ident
 char* shm_addr;
 
 // Product Semaphores
-const key_t KEY_MUTEX = 0x12345;
-const key_t KEY_EMPTY = 0x12346;
-const key_t KEY_FULL = 0x12347;
+const key_t KEY_MUTEX = ftok(".", m);
+const key_t KEY_EMPTY = ftok(".", e);
+const key_t KEY_FULL = ftok(".", f);
 
 struct shmseg {
    int cntr;
